@@ -1,11 +1,17 @@
+import curses
+import os
+import re
 import sys
 import time
-import logo
-import curses
-import re
+import pickle
+
+from curses import wrapper
 from curses.textpad import Textbox
-from person import Person
+
+import logo
 from drink import Drink
+from person import Person
+
 version= "v0.5"
 
 PEOPLE_FILE = "dbs/people.db"
@@ -41,6 +47,37 @@ drinkChoices = [
     "View Drinks Table",
     "Go back"] # Ensure this element comes last
 
+def loadObjects(file):
+    global stdscr
+    data = None
+    try:
+        pickle_in = open(file,"rb")
+        data = pickle.load(pickle_in)
+    except:
+        stdscr.addstr(f"Cant load data from {file}\n")
+        stdscr.getch()
+        return -1
+    finally:
+        pickle_in.close()
+    return data
+
+
+def saveObjects(file, data):
+    global stdscr
+    try:
+        pickleOut = open(file,"wb")
+        pickle.dump(data,pickleOut)
+    except:
+        stdscr.addstr(f"Cant save data to {file}\n")
+        stdscr.refresh()
+        return -1
+    finally:
+        pickleOut.close()
+
+def getPeople():
+    global people
+    return people
+
 def filterTable(dataList,regex):
     regex = re.compile(regex, re.IGNORECASE)
     newDataList = []
@@ -56,17 +93,32 @@ def calcTableWidth(title,dataList):
                 width=len(data.displayName)
         return width
 
-def printTable(title,dataList, Indexed=False, filterBy="" , selected=None):
+def printTable(title,dataList, start=0, end=0, filterBy="" , selected=[], current = -1, normaltextFormatting = curses.A_NORMAL, selectedtextFormat = curses.A_REVERSE, currentTextFormat = curses.A_REVERSE):
     global stdscr
     clearScreen()
+    decorationLines = 9
+    minlines = decorationLines + 1
     tableWidth = calcTableWidth(title,dataList)
     if(tableWidth<16):
         tableWidth=16
     titleMargins=0
-    if Indexed:
-        tableWidth+=5
-        titleMargins+=5
     tableMargins = 6
+    if end == 0 or end > minlines-decorationLines:
+        if curses.LINES>=minlines:
+            end = curses.LINES-decorationLines+2
+        else:
+            stdscr.addstr("Resize terminal to atleast {minlines} Lines and {width} columns\n".format(minlines = minlines, width = tableWidth+tableMargins+3))
+            isGoodSize = False
+            while not isGoodSize:
+                keyIn = stdscr.getch()
+                if(keyIn == curses.KEY_RESIZE):
+                    curses.update_lines_cols()
+                    if curses.LINES >= minlines and curses.COLS >= tableWidth+tableMargins:
+                        stdscr.resize(curses.LINES,curses.COLS)
+                        isGoodSize = True
+                        end = curses.LINES -decorationLines
+                        clearScreen()
+
     tableSeparator = "+"
     for i in range(tableWidth+tableMargins+titleMargins):
         tableSeparator+="-"
@@ -79,82 +131,131 @@ def printTable(title,dataList, Indexed=False, filterBy="" , selected=None):
     stdscr.addstr("{filtertext:15}".format(filtertext = filterBy))
     stdscr.addstr("|\n")
     stdscr.addstr(tableSeparator)
+    if current >= end:
+        end = current + 1
+        start = end - (curses.LINES - decorationLines)
+    elif current < start and current > 0:
+        start -= 1
+        end -= 1 
     for index,entry in enumerate(dataList):
-        if Indexed:
-            if selected == index:
+        if index >= start and index < end:
+            if index == current:
                 stdscr.addstr("|")
-                stdscr.addstr("[{index:<2}] {entry:^{width}}".format(index = index, entry=entry.displayName, width=tableWidth+tableMargins), curses.A_REVERSE)
+                stdscr.addstr("{entry:^{width}}".format(entry=entry.displayName, width=tableWidth+tableMargins), currentTextFormat)
+                stdscr.addstr("|\n")
+            elif index in selected:
+                stdscr.addstr("|")
+                stdscr.addstr("{entry:^{width}}".format(entry=entry.displayName, width=tableWidth+tableMargins), selectedtextFormat)
                 stdscr.addstr("|\n")
             else:
                 stdscr.addstr("|")
-                stdscr.addstr("[{index:<2}] {entry:^{width}}".format(index = index, entry=entry.displayName, width=tableWidth+tableMargins))
+                stdscr.addstr("{entry:^{width}}".format(entry=entry.displayName, width=tableWidth+tableMargins), normaltextFormatting)
                 stdscr.addstr("|\n")
-        else:
-            if selected == index:
-                stdscr.addstr("|")
-                stdscr.addstr("{entry:^{width}}".format(entry=entry.displayName, width=tableWidth+tableMargins), curses.A_REVERSE)
-                stdscr.addstr("|\n")
-            else:
-                stdscr.addstr("|")
-                stdscr.addstr("{entry:^{width}}".format(entry=entry.displayName, width=tableWidth+tableMargins))
-                stdscr.addstr("|\n")
-    stdscr.addstr(tableSeparator+"\n")
+    stdscr.addstr(tableSeparator)
     stdscr.refresh()
 
 def handleItemRows(choice,table):
     global stdscr
-    keyIn = stdscr.getkey()
+    keyIn = stdscr.getch()
     selected = False
-    if keyIn == "KEY_DOWN" and choice < len(table):
+    if keyIn == curses.KEY_DOWN and choice < len(table):
         choice += 1
-    elif keyIn == "KEY_UP":
+    elif keyIn == curses.KEY_UP:
         choice -= 1
-    elif keyIn == "\n" or keyIn ==" " :
+    elif keyIn == curses.KEY_ENTER or curses.ascii.isspace(keyIn) :
         selected = True
-    elif keyIn == "q":
+    elif curses.ascii.ctrl(keyIn) == 23 and curses.ascii.isctrl(keyIn): # CTRL + W (EXIT)
         choice = -1
     return choice, selected
 
-def handleTables(title,dataList,filterRegex, choice=0):
+def handleSingleSelectTable(title,dataList,filterRegex, choice=0, caption=""):
     global stdscr
     itemSelected = False
-    selectedItemIDs = []
     while True:
         clearScreen()
         filteredTable = filterTable(dataList, filterRegex)
         if(choice == 0): # Filter row
-            printTable(title,filteredTable, False, filterRegex)
-            keyIn = stdscr.getkey()
+            printTable(title,filteredTable,0,curses.LINES, filterRegex)
+            stdscr.addstr(caption)
+            keyIn = stdscr.getch()
             if(len(filterRegex) < 15): # max char limit for filter
-                if (keyIn == "KEY_BACKSPACE"):
+                if (keyIn == curses.KEY_BACKSPACE):
                     filterRegex = filterRegex[:-1]
-                elif (keyIn == "KEY_DELETE"):
+                elif (keyIn == curses.KEY_DC):
                     filterRegex = ""
-                elif keyIn == "KEY_DOWN":
+                elif keyIn == curses.KEY_DOWN:
                     if(choice<len(filteredTable)):
                         choice += 1
-                elif keyIn == "KEY_ESC":
+                elif curses.ascii.ctrl(keyIn) == 23 and curses.ascii.isctrl(keyIn):
                     break
-                elif keyIn != "KEY_LEFT" and keyIn != "KEY_RIGHT" and keyIn != "KEY_UP":
-                    filterRegex += keyIn
+                elif keyIn == curses.KEY_ENTER or keyIn == 10 or keyIn == 13:
+                    if len(filteredTable)>0:
+                        choice = 1
+                elif curses.ascii.isascii(keyIn):
+                    filterRegex += chr(keyIn)
             else: # if at max chat limit
-                if (keyIn == "KEY_BACKSPACE"):
+                if (keyIn == curses.KEY_BACKSPACE):
                     filterRegex = filterRegex[:-1]
-                elif keyIn == "KEY_DOWN":
+                elif keyIn == curses.KEY_DOWN:
                     choice += 1
-                elif keyIn == "KEY_ESC":
+                elif curses.ascii.ctrl(keyIn) == 23 and curses.ascii.isctrl(keyIn):
                     break
         elif( choice > 0 and choice <= len(filteredTable) ): # Item rows
-            printTable(title,filteredTable, False, filterRegex, choice-1)
+            printTable(title,filteredTable,0,0, filterRegex, [choice-1], choice-1)
+            stdscr.addstr(caption)
             choice, itemSelected = handleItemRows(choice,filteredTable)
             if(itemSelected):
-                selectedItemIDs.append(choice-1)
-                itemSelected = False
-            elif(choice == -1):
-                break
-        
-            
+                return filteredTable[choice-1]
+    return None
 
+def handleMultiSelectTable(title,dataList,filterRegex, choice=0):
+    global stdscr
+    itemSelected = False
+    selectedItems = []
+    while True:
+        clearScreen()
+        selectedItemIDs = []
+        filteredTable = filterTable(dataList, filterRegex)
+        for index, item in enumerate(filteredTable):
+            if item in selectedItems:
+                selectedItemIDs.append(index)
+        if(choice == 0): # Filter row
+            printTable(title,filteredTable, 0, curses.LINES, filterRegex, selectedItemIDs, choice -1 , curses.A_DIM , curses.A_NORMAL)
+            keyIn = stdscr.getch()
+            if(len(filterRegex) < 15): # max char limit for filter
+                if (keyIn == curses.KEY_BACKSPACE):
+                    filterRegex = filterRegex[:-1]
+                elif (keyIn == curses.KEY_DC):
+                    filterRegex = ""
+                elif keyIn == curses.KEY_DOWN:
+                    if(choice<len(filteredTable)):
+                        choice += 1
+                elif curses.ascii.ctrl(keyIn) == 23 and curses.ascii.isctrl(keyIn):
+                    break
+                elif curses.ascii.isascii(keyIn):
+                    filterRegex += chr(keyIn)
+            else: # if at max chat limit
+                if (keyIn == curses.KEY_BACKSPACE):
+                    filterRegex = filterRegex[:-1]
+                elif keyIn == curses.KEY_DOWN:
+                    choice += 1
+                elif curses.ascii.ctrl(keyIn) == 23 and curses.ascii.isctrl(keyIn): # CTRL+w (EXIT)
+                    break
+        elif( choice > 0 and choice <= len(filteredTable) ): # Item rows
+            printTable(title,filteredTable, 0, curses.LINES, filterRegex, selectedItemIDs,choice -1 , curses.A_DIM , curses.A_NORMAL, curses.A_REVERSE)
+            choice, itemSelected = handleItemRows(choice,filteredTable)
+            if(itemSelected):
+                if(filteredTable[choice - 1] in selectedItems):
+                    selectedItems.remove(filteredTable[choice-1])
+                    selectedItemIDs.remove(choice-1)
+                else:
+                    selectedItems.append(filteredTable[choice-1])
+                    selectedItemIDs.append(choice-1)
+                itemSelected = False
+            elif (choice == -1):
+                break
+    return selectedItems
+                
 def cursedInput(Query):
     global stdscr
     clearScreen()
@@ -168,14 +269,19 @@ def cursedInput(Query):
     stdscr.keypad(True)
     return temp
 
-def addNewPerson():
+def addNewPerson(name="",team="",favDrink=None,PMUDrink="N/A"):
     global stdscr
     clearScreen()
     curses.nocbreak()
     stdscr.keypad(False)
     curses.echo()
-    name = cursedInput("Enter name of person: ")
-    team = cursedInput("Enter name of team person is in: ")
+    if not name:
+        name = cursedInput("Enter name of person: ")
+    if not team:
+        team = cursedInput("Enter name of team person is in: ")
+    if not favDrink:
+        favDrink = handleSingleSelectTable("Drinks", drinks,"",0,"Select this persons favorite drink")
+    people.append(Person(name,team,favDrink,PMUDrink))
 
 def clearScreen():
     global stdscr
@@ -204,7 +310,7 @@ def printMenu(menu, selected = 0, start = 0 , end = None):
     stdscr.refresh()
 
 def handleMainMenu():
-    global currentChoice, start, end
+    global currentChoice, start, end, people, drinks
     stdscr.clear()
     
     if(curses.LINES-1 > len(menuChoices)): # No pagination
@@ -239,26 +345,33 @@ def handleMainMenu():
         elif(currentChoice == 2): # View all tables
             pass
         elif(currentChoice == 3): # Save all tables
-            pass
+            saveObjects(PEOPLE_FILE,people)
+            saveObjects(DRINKS_FILE,drinks)
+            stdscr.addstr(0,0,"Saved!")
+            stdscr.getch()
         elif(currentChoice == 4): # View Settings
             pass
         elif(currentChoice == 5): # Exit application
+            clearScreen()
+            saveObjects(PEOPLE_FILE,people)
+            saveObjects(DRINKS_FILE,drinks)
             curses.nocbreak()
             stdscr.keypad(False)
             curses.echo()
             curses.endwin()
+
             exit()
 
 def handlePeopleMenu():
     global currentChoice, start, end
     stdscr.clear()
     while True:
-        if(curses.LINES-1 > len(peopleChoices)): # No pagination
+        if(curses.LINES > len(peopleChoices)+1): # No pagination
             printMenu(peopleChoices,currentChoice)
         else:#Paginate
-            if(end == len(peopleChoices)): # Initial menu list lenght based on terminal size
+            if(end == len(peopleChoices)): # Initial menu list length based on terminal size
                 end = curses.LINES-2
-            printMenu(peopleChoices,currentChoice,start,end+1)
+                printMenu(peopleChoices,currentChoice,start,end+1)
         input = stdscr.getkey()
         if(input.isdigit() and int(input) > 0 and int(input) <=len(peopleChoices)):
             currentChoice = int(input) -1
@@ -277,17 +390,27 @@ def handlePeopleMenu():
             if(currentChoice == 0): # ADD person
                 addNewPerson()
             elif(currentChoice == 1): # REMOVE person
-                pass
+                removableItems = handleMultiSelectTable("People",people,"",0)
+                for item in removableItems:
+                    people.remove(item)
             elif(currentChoice == 2): # SORT table
-                pass
+                people.sort(key= lambda person: person.name)
+                stdscr.addstr(3,37,"...Sorted!")
+                stdscr.getch()
             elif(currentChoice == 3): # Reverse Table
-                pass
+                people.reverse()
+                stdscr.addstr(4,25,"...Reversed!")
+                stdscr.getch()
             elif(currentChoice == 4): # ASSIGN drink
-                pass
+                person = handleSingleSelectTable("People", people, "", 0,"Select a person to assign drink to")
+                drink = handleSingleSelectTable("Drinks", drinks, "", 0 , f"Select drink to assign to {person.displayName}")
+                person.favDrink = drink
             elif(currentChoice == 5): # ASSIGN PMU
-                pass
+                person = handleSingleSelectTable("People", people, "", 0,"Select a person to assign drink to")
+                drink = handleSingleSelectTable("Drinks", drinks, "", 0 , f"Select drink to assign to {person.displayName}")
+                person.PMUDrink = drink
             elif(currentChoice == 6): # View Table
-                handleTables("People",people,"",0)
+                handleSingleSelectTable("People",people,"",0)
                 pass
             elif(currentChoice == 7): # Go back
                 currentChoice = 0
@@ -298,15 +421,24 @@ def handlePeopleMenu():
 stdscr = curses.initscr()
 curses.start_color()
 curses.curs_set(False)
-curses.noecho()
-curses.cbreak()
-stdscr.keypad(True)
-#----START
 start = 0
 end = len(menuChoices)
-people.append(Person("David","david", "Academy", None))
-people.append(Person("Henry","henry", "Academy", None))
-people.append(Person("Dave","dave", "Academy", None))
-while True:
-    handleMainMenu()
-    
+
+def main(stdscr):
+    global people, drinks
+
+    people = loadObjects(PEOPLE_FILE)
+    drinks = loadObjects(DRINKS_FILE)
+
+    while True:
+        handleMainMenu()
+
+if __name__ == "__main__":
+    wrapper(main)
+else:
+    curses.nocbreak()
+    stdscr.keypad(False)
+    curses.echo()
+    people = loadObjects(PEOPLE_FILE)
+    drinks = loadObjects(DRINKS_FILE)
+
