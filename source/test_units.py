@@ -112,6 +112,8 @@ class test_People(unittest.TestCase):
         #Assert
         self.assertEqual(2,len(filtered_peeps))
 if __name__ == "__main__":
-    initializeScreen()
-    unittest.main()
-    deinitializeScreen()
+    try:
+        initializeScreen()
+        unittest.main()
+    finally:
+        deinitializeScreen()
