@@ -7,10 +7,10 @@ import time
 from curses import wrapper
 from curses.textpad import Textbox
 
-import logo
+# TODO import logo
 from drink import Drink
 from person import Person
-import state
+from state import State as state
 
 version= "v0.5"
 
@@ -20,7 +20,7 @@ DRINKS_FILE = "dbs/drinks.db"
 people = []
 drinks = []
 
-stdscr =""
+stdscr = None
 currentChoice = 0
 menuChoices = [
         "Start Round!",
@@ -313,7 +313,6 @@ def findPeopleByTeam(team,people):
 def handleMainMenu():
     global currentChoice, start, end, people, drinks
     stdscr.clear()
-    
     if(curses.LINES-1 > len(menuChoices)): # No pagination
         printMenu(menuChoices,currentChoice)
     else:#Paginate
@@ -337,7 +336,8 @@ def handleMainMenu():
     elif(input == "\n" or input ==" "): # ENTER key or SPACE key
         if(currentChoice == 0):
             initiator = handleSingleSelectTable("People",people,"",0,"Choose yourself from this list")
-
+            teamMembers = findPeopleByTeam(initiator.team,people)
+            #TODO
             pass
         elif(currentChoice == 1):
             currentChoice = 0
@@ -368,6 +368,17 @@ def handleMainMenu():
             curses.endwin()
 
             exit()
+
+def initializeScreen():
+    global stdscr
+    stdscr = curses.initscr()
+
+def setScreen(screen):
+    global stdscr
+    stdscr = screen
+
+def deinitializeScreen():
+    curses.endwin()
 
 def handlePeopleMenu():
     global currentChoice, start, end
@@ -471,27 +482,25 @@ def handleDrinksMenu():
                 end = curses.LINES-2
                 break
 #----SETUP
-stdscr = curses.initscr()
-curses.start_color()
-curses.curs_set(False)
+
 start = 0
 end = len(menuChoices)
 
 def main(stdscr):
     global people, drinks
 
+    curses.curs_set(False)
     people = state.loadObjects(PEOPLE_FILE)
     drinks = state.loadObjects(DRINKS_FILE)
 
     while True:
-        handleMainMenu()
+            handleMainMenu()
 
 if __name__ == "__main__":
+    initializeScreen()
+    curses.curs_set(False)
     wrapper(main)
 else:
-    curses.nocbreak()
-    stdscr.keypad(False)
-    curses.echo()
     people = state.loadObjects(PEOPLE_FILE)
     drinks = state.loadObjects(DRINKS_FILE)
 
