@@ -3,7 +3,6 @@ import os
 import re
 import sys
 import time
-import pickle
 
 from curses import wrapper
 from curses.textpad import Textbox
@@ -11,6 +10,7 @@ from curses.textpad import Textbox
 import logo
 from drink import Drink
 from person import Person
+import state
 
 version= "v0.5"
 
@@ -23,6 +23,7 @@ drinks = []
 stdscr =""
 currentChoice = 0
 menuChoices = [
+        "Start Round!",
         "Manage/View People",
         "Manage/View Drinks",
         "View all tables",
@@ -43,36 +44,11 @@ drinkChoices = [
     "Remove drink",
     "Sort table alphabetically",
     "Reverse table",
-    "Assign drink to person",
+    "Assign favorite drink to person",
+    "Assign pick-me-up drink to person",
     "View Drinks Table",
     "Go back"] # Ensure this element comes last
 
-def loadObjects(file):
-    global stdscr
-    data = None
-    try:
-        pickle_in = open(file,"rb")
-        data = pickle.load(pickle_in)
-    except:
-        stdscr.addstr(f"Cant load data from {file}\n")
-        stdscr.getch()
-        return -1
-    finally:
-        pickle_in.close()
-    return data
-
-
-def saveObjects(file, data):
-    global stdscr
-    try:
-        pickleOut = open(file,"wb")
-        pickle.dump(data,pickleOut)
-    except:
-        stdscr.addstr(f"Cant save data to {file}\n")
-        stdscr.refresh()
-        return -1
-    finally:
-        pickleOut.close()
 
 def getPeople():
     global people
@@ -283,31 +259,56 @@ def addNewPerson(name="",team="",favDrink=None,PMUDrink="N/A"):
         favDrink = handleSingleSelectTable("Drinks", drinks,"",0,"Select this persons favorite drink")
     people.append(Person(name,team,favDrink,PMUDrink))
 
+def addNewDrink(name="",drink_type="",recipe=None):
+    global stdscr
+    clearScreen()
+    curses.nocbreak()
+    stdscr.keypad(False)
+    curses.echo()
+    if not name:
+        name = cursedInput("Enter name of drink: ")
+    if not drink_type:
+        drink_type = cursedInput("Enter type of drink: ")
+    if not recipe:
+        recipe = cursedInput("Enter recipe of drink (keep it short):")
+    drinks.append(Drink(name,drink_type,recipe))
+
 def clearScreen():
     global stdscr
     stdscr.clear()
 
 def printMenu(menu, selected = 0, start = 0 , end = None):
     global stdscr
-    if end == None:
-        end = len(menu)
-    stdscr.clear()
-    if curses.LINES-1 >= len(menu)*2:
+    clearScreen()
+    contentLines = curses.LINES - 1
+    end = contentLines
+    if contentLines >= len(menu)*2: #Stylish option| no pagination
         for index, choice in enumerate(menu):
             if(index == selected):
                 stdscr.addstr("\n\t")
                 stdscr.addstr("[{index}] {choice}\n".format(index=index+1, choice=choice), curses.A_STANDOUT)
             else:
                 stdscr.addstr("\n\t[{index}] {choice}\n".format(index=index+1, choice=choice))
-    else: # Short version for smaller terminals
-        selected -= start
-        for index, choice in enumerate(menu[start:end]):
-            if(index == selected):
-                stdscr.addstr("\n\t")
-                stdscr.addstr("[{index}] {choice}".format(index=index+1+start, choice=choice), curses.A_STANDOUT)
-            else:
-                stdscr.addstr("\n\t[{index}] {choice}".format(index=index+1+start, choice=choice))
+    else: # Short version for smaller terminals | possible pagination
+        # Paginate
+        if selected >= end: # Scroll Down
+            end = selected + 1
+            start = end - contentLines
+        for index, choice in enumerate(menu):
+            if index>=start and index < end:
+                if(index == selected):
+                    stdscr.addstr("\n\t")
+                    stdscr.addstr("[{index}] {choice}".format(index=index, choice=choice), curses.A_STANDOUT)
+                else:
+                    stdscr.addstr("\n\t[{index}] {choice}".format(index=index, choice=choice))
     stdscr.refresh()
+
+def findPeopleByTeam(team,people):
+    tempPeople = []
+    for person in people:
+        if person.team == team:
+            tempPeople.append(person)
+    return tempPeople
 
 def handleMainMenu():
     global currentChoice, start, end, people, drinks
@@ -335,26 +336,32 @@ def handleMainMenu():
             end -= 1
     elif(input == "\n" or input ==" "): # ENTER key or SPACE key
         if(currentChoice == 0):
+            initiator = handleSingleSelectTable("People",people,"",0,"Choose yourself from this list")
+
+            pass
+        elif(currentChoice == 1):
             currentChoice = 0
             start = 0
             end = curses.LINES-2
             handlePeopleMenu()
-        elif(currentChoice == 1):
-            #handle drinks
+        elif(currentChoice == 2):
+            currentChoice = 0
+            start = 0
+            end = curses.LINES-2
+            handleDrinksMenu()
+        elif(currentChoice == 3): # View all tables
             pass
-        elif(currentChoice == 2): # View all tables
-            pass
-        elif(currentChoice == 3): # Save all tables
-            saveObjects(PEOPLE_FILE,people)
-            saveObjects(DRINKS_FILE,drinks)
+        elif(currentChoice == 4): # Save all tables
+            state.saveObjects(PEOPLE_FILE,people)
+            state.saveObjects(DRINKS_FILE,drinks)
             stdscr.addstr(0,0,"Saved!")
             stdscr.getch()
-        elif(currentChoice == 4): # View Settings
+        elif(currentChoice == 5): # View Settings
             pass
-        elif(currentChoice == 5): # Exit application
+        elif(currentChoice == 6): # Exit application
             clearScreen()
-            saveObjects(PEOPLE_FILE,people)
-            saveObjects(DRINKS_FILE,drinks)
+            state.saveObjects(PEOPLE_FILE,people)
+            state.saveObjects(DRINKS_FILE,drinks)
             curses.nocbreak()
             stdscr.keypad(False)
             curses.echo()
@@ -366,12 +373,7 @@ def handlePeopleMenu():
     global currentChoice, start, end
     stdscr.clear()
     while True:
-        if(curses.LINES > len(peopleChoices)+1): # No pagination
-            printMenu(peopleChoices,currentChoice)
-        else:#Paginate
-            if(end == len(peopleChoices)): # Initial menu list length based on terminal size
-                end = curses.LINES-2
-                printMenu(peopleChoices,currentChoice,start,end+1)
+        printMenu(peopleChoices,currentChoice)
         input = stdscr.getkey()
         if(input.isdigit() and int(input) > 0 and int(input) <=len(peopleChoices)):
             currentChoice = int(input) -1
@@ -417,6 +419,57 @@ def handlePeopleMenu():
                 start = 0
                 end = curses.LINES-2
                 break
+
+def handleDrinksMenu():
+    global currentChoice, start, end
+    stdscr.clear()
+    while True:
+        printMenu(drinkChoices,currentChoice)
+        input = stdscr.getkey()
+        if(input.isdigit() and int(input) > 0 and int(input) <=len(peopleChoices)):
+            currentChoice = int(input) -1
+            input = " "
+        if(input == "KEY_DOWN" and currentChoice < len(peopleChoices)-1):
+            currentChoice+=1
+            if(curses.LINES-1 < len(peopleChoices) and end < len(peopleChoices)-1 and currentChoice == end): # Go down a page
+                start += 1
+                end += 1
+        elif(input == "KEY_UP" and currentChoice > 0):
+            currentChoice-=1
+            if(curses.LINES-1 < len(peopleChoices) and start > 0 and currentChoice==start): # Go up a page
+                start -= 1
+                end -= 1
+        elif(input == "\n" or input ==" "): # ENTER key or SPACE key
+            if(currentChoice == 0): # ADD drink
+                addNewDrink()
+            elif(currentChoice == 1): # REMOVE drink
+                removableItems = handleMultiSelectTable("Drinks",drinks,"",0)
+                for item in removableItems:
+                    drinks.remove(item)
+            elif(currentChoice == 2): # SORT table
+                drinks.sort(key= lambda person: person.name)
+                stdscr.addstr(3,37,"...Sorted!")
+                stdscr.getch()
+            elif(currentChoice == 3): # Reverse Table
+                drinks.reverse()
+                stdscr.addstr(4,25,"...Reversed!")
+                stdscr.getch()
+            elif(currentChoice == 4): # ASSIGN drink
+                person = handleSingleSelectTable("People", people, "", 0,"Select a person to assign drink to")
+                drink = handleSingleSelectTable("Drinks", drinks, "", 0 , f"Select drink to assign to {person.displayName}")
+                person.favDrink = drink
+            elif(currentChoice == 5): # ASSIGN PMU
+                person = handleSingleSelectTable("People", people, "", 0,"Select a person to assign drink to")
+                drink = handleSingleSelectTable("Drinks", drinks, "", 0 , f"Select drink to assign to {person.displayName}")
+                person.PMUDrink = drink
+            elif(currentChoice == 6): # View Table
+                handleSingleSelectTable("Drinks",drinks,"",0)
+                pass
+            elif(currentChoice == 7): # Go back
+                currentChoice = 0
+                start = 0
+                end = curses.LINES-2
+                break
 #----SETUP
 stdscr = curses.initscr()
 curses.start_color()
@@ -427,8 +480,8 @@ end = len(menuChoices)
 def main(stdscr):
     global people, drinks
 
-    people = loadObjects(PEOPLE_FILE)
-    drinks = loadObjects(DRINKS_FILE)
+    people = state.loadObjects(PEOPLE_FILE)
+    drinks = state.loadObjects(DRINKS_FILE)
 
     while True:
         handleMainMenu()
@@ -439,6 +492,6 @@ else:
     curses.nocbreak()
     stdscr.keypad(False)
     curses.echo()
-    people = loadObjects(PEOPLE_FILE)
-    drinks = loadObjects(DRINKS_FILE)
+    people = state.loadObjects(PEOPLE_FILE)
+    drinks = state.loadObjects(DRINKS_FILE)
 
