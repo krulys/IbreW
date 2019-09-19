@@ -1,24 +1,55 @@
 import pickle
 import curses
-from ui import UI as UI
-from person import Person
-from drink import Drink
-from tables import Tables as tables
+import pymysql
+import os
+from source.ui import UI as UI
+from source.person import Person
+from source.drink import Drink
+from source.tables import Tables as tables
+
+
 
 class State:
 
-    PEOPLE_FILE = "dbs/people.db"
-    DRINKS_FILE = "dbs/drinks.db"
+    PEOPLE_FILE = "./dbs/people.db"
+    DRINKS_FILE = "./dbs/drinks.db"
 
     _people = []
     _drinks = []
 
+    def loadObjectsFromDB():
+        try:
+            db = pymysql.connect(os.environ["db_host"], #host
+            os.environ["db_user"], #username
+            os.environ["db_pass"], #password
+            "klaudijus" #database
+            )
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM person")
+
+            results = cursor.fetchall()
+
+            for row in results:
+
+                displayName = row[0]
+                name = row[1]
+                team = row[2]
+                print(f"{displayName}, {name}, {team}")
+        except:
+            print("Something went wrong...")
+
+
     def loadObjects(screen):
         State._people = State.loadObjectFromFile(screen,State.PEOPLE_FILE)
+        if State._people == -1 :
+            State._people = []
         State._drinks = State.loadObjectFromFile(screen,State.DRINKS_FILE)
+        if State._drinks == -1 :
+            State._drinks = []
 
     def loadObjectFromFile(screen, file):
         data = None
+        pickle_in = None
         try:
             pickle_in = open(file,"rb")
             data = pickle.load(pickle_in)
@@ -27,7 +58,8 @@ class State:
             screen.getch()
             return -1
         finally:
-            pickle_in.close()
+            if pickle_in != None :
+                pickle_in.close()
         return data
 
     def saveObjects(screen):
@@ -48,7 +80,6 @@ class State:
 
     def addNewPerson(screen, name="",team="",favDrink=None,PMUDrink="N/A"):
         UI.clearScreen(screen)
-        curses.nocbreak()
         screen.keypad(False)
         curses.echo()
         if not name:
@@ -103,7 +134,7 @@ class State:
             drink_type = UI.cursedInput(screen,"Enter type of drink: ")
         if not recipe:
             recipe = UI.cursedInput(screen,"Enter recipe of drink (keep it short):")
-        _drinks.append(Drink(name,drink_type,recipe))
+        State._drinks.append(Drink(name,drink_type,recipe))
 
         curses.cbreak()
         screen.keypad(True)
@@ -125,3 +156,5 @@ class State:
         person = tables.handleSingleSelectTable(screen,"People", State._people, "", 0,"Select a person to assign drink to")
         drink = tables.handleSingleSelectTable(screen,"Drinks", State._drinks, "", 0 , f"Select drink to assign to {person.displayName}")
         person.PMUDrink = drink
+
+    loadObjectsFromDB()

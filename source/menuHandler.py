@@ -1,9 +1,9 @@
 import curses
-from ui import UI as UI
-from menuOptions import MenuOptions as menuOptions
-from person import Person
-from state import State as state
-from tables import Tables as tables
+from source.ui import UI as UI
+from source.menuOptions import MenuOptions as menuOptions
+from source.person import Person
+from source.state import State as state
+from source.tables import Tables as tables
 
 class MenuHandler:
 

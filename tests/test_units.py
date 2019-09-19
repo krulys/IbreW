@@ -2,11 +2,11 @@ import unittest
 from unittest.mock import patch, Mock
 from types import SimpleNamespace
 
-from cursedIbreW import *
-from person import Person
-from tables import Tables as tables
-from state import State as state
-from ui import UI as UI
+from source.cursedIbreW import *
+from source.person import Person
+from source.tables import Tables as tables
+from source.state import State as state
+from source.ui import UI as UI
 
 class test_People(unittest.TestCase):
     def test_find_people_by_team(self):
@@ -37,7 +37,6 @@ class test_People(unittest.TestCase):
         #Assert
         self.assertEqual(len(expected_output), len(actual_output))
         self.assertEqual(expected_output, actual_output)
-        deinitializeScreen()
 
 
     def test_create_person_1(self):
@@ -59,7 +58,6 @@ class test_People(unittest.TestCase):
         #Assert
         self.assertEqual(len(actual_output), len(expected_output))
         self.assertEqual(expected_output, actual_output)
-        deinitializeScreen()
 
 
     def test_create_person_2(self):
@@ -80,7 +78,6 @@ class test_People(unittest.TestCase):
 
         #Assert
         self.assertEqual(expected_output,actual_output)
-        deinitializeScreen()
 
 
     def test_create_person_empty(self):
@@ -101,7 +98,6 @@ class test_People(unittest.TestCase):
 
         #Assert
         self.assertEqual(expected_output, actual_output)
-        deinitializeScreen()
 
 
     def test_calc_table_width(self):

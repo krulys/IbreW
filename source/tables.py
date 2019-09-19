@@ -1,7 +1,7 @@
 import curses
 import curses.ascii
 import re
-from ui import UI as UI
+from source.ui import UI as UI
 
 class Tables:
 
@@ -47,7 +47,6 @@ class Tables:
         itemSelected = False
         while True:
             UI.clearScreen(screen)
-
             filteredTable = Tables.filterTable(dataList, filterRegex)
 
             if choice == 0 : # Filter row
@@ -119,6 +118,8 @@ class Tables:
 
 
     def filterTable(dataList,regex):
+        if dataList == []:
+            return []
         regex = re.compile(regex, re.IGNORECASE)
         newDataList = []
         for data in dataList:

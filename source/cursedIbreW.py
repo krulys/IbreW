@@ -8,17 +8,14 @@ import time
 from curses import wrapper
 
 # TODO import logo (convert to cursed)
-from state import State as state
-from menuHandler import MenuHandler as menuHandler
-from menuOptions import MenuOptions as menuOptions
-from ui import UI as UI
+from source.state import State as state
+from source.menuHandler import MenuHandler as menuHandler
+from source.menuOptions import MenuOptions as menuOptions
+from source.ui import UI as UI
 
 def initializeScreen():
     screen = curses.initscr()
     return screen
-
-def deinitializeScreen():
-    curses.endwin()
 
 def exitApp(screen):
     UI.clearScreen(screen)
