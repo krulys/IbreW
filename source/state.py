@@ -98,11 +98,11 @@ class State:
         curses.echo()
 
         if not name:
-            name = UI.cursedInput("Enter name of drink: ")
+            name = UI.cursedInput(screen,"Enter name of drink: ")
         if not drink_type:
-            drink_type = UI.cursedInput("Enter type of drink: ")
+            drink_type = UI.cursedInput(screen,"Enter type of drink: ")
         if not recipe:
-            recipe = UI.cursedInput("Enter recipe of drink (keep it short):")
+            recipe = UI.cursedInput(screen,"Enter recipe of drink (keep it short):")
         _drinks.append(Drink(name,drink_type,recipe))
 
         curses.cbreak()
