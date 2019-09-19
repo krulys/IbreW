@@ -1,5 +1,5 @@
 class BrewRound:
-
+    # TODO update to match new project structure
     def __init__(self, people, initiator, teamName=None):
         self._teamName = teamName
         self._people = people
