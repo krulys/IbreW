@@ -8,12 +8,10 @@ import time
 from curses import wrapper
 
 # TODO import logo (convert to cursed)
-from drink import Drink
-from person import Person
 from state import State as state
-from ui import UI as UI
 from menuHandler import MenuHandler as menuHandler
 from menuOptions import MenuOptions as menuOptions
+from ui import UI as UI
 
 def initializeScreen():
     screen = curses.initscr()
@@ -28,7 +26,7 @@ def exitApp(screen):
     curses.nocbreak()
     screen.keypad(False)
     curses.echo()
-    curses.endwin()
+    deinitializeScreen()
     exit()
 
 def main(screen):
@@ -49,6 +47,5 @@ screen = initializeScreen()
 if __name__ == "__main__":
     wrapper(main)
 else:
-    people = state.loadObjects(screen)
-    drinks = state.loadObjects(screen)
+    state.loadObjects(screen)
 
