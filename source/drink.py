@@ -1,6 +1,7 @@
 class Drink:
 
-    def __init__(self, displayName , drink_type, recipe=None):
+    def __init__(self, drink_id ,displayName , drink_type, recipe=None):
+        self._drink_id = drink_id
         self._name = displayName.lower()
         self._displayName = displayName
         self._drink_type = drink_type

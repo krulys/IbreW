@@ -23,12 +23,12 @@ def exitApp(screen):
     curses.nocbreak()
     screen.keypad(False)
     curses.echo()
-    deinitializeScreen()
+    state.saveObjectsToDB(screen)
     exit()
 
 def main(screen):
     curses.curs_set(False)
-    state.loadObjects(screen)
+    state.loadObjectsFromDB(screen)
     currentChoice = 0
     while currentChoice != -1:
         currentChoice = menuHandler.handleMainMenu(

@@ -1,10 +1,13 @@
 class Person:
 
-    def __init__(self, displayName, team, favDrink, PMUDrink="N/A"):
+    def __init__(self, person_id, displayName, team, favDrink, PMUDrink=None):
+        self._person_id = person_id
         self._displayName = displayName
         self._name = displayName.lower()
         self._team = team
         self._favDrink = favDrink
+        if not PMUDrink:
+            self._PMUDrink = favDrink
         self._PMUDrink = PMUDrink
 
     def __eq__(self,other):

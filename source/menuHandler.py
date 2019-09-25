@@ -25,6 +25,15 @@ class MenuHandler:
             if currentChoice == 0: # Start round
                 initiator = tables.handleSingleSelectTable(screen,"People",people,"",0,"Choose yourself from this list")
                 teamMembers = tables.findPeopleByTeam(initiator.team,people)
+                names = []
+                favDrinks = []
+                PMUDrinks = []
+                for member in teamMembers:
+                    names.append(member)
+                    favDrinks.append(member.favDrink)
+                    PMUDrinks.append(member.PMUDrink)
+                UI.printMultiColumnTable(screen,"Brew Round",[names,favDrinks, PMUDrinks])
+                screen.getch()
                 #TODO finish this
                 pass
 
@@ -65,7 +74,6 @@ class MenuHandler:
             elif currentChoice == 6: # Exit application
                 currentChoice = -1
         return currentChoice
-
 
     def handlePeopleMenu(screen,peopleMenuOptions, currentChoice, people=[], drinks=[]):
         screen.clear()
@@ -111,7 +119,6 @@ class MenuHandler:
             elif currentChoice == 7: # Go back
                currentChoice = -1
         return currentChoice
-
 
     def handleDrinksMenu(screen,drinkMenuOptions, currentChoice, people=[], drinks=[]):
         screen.clear()

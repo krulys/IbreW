@@ -85,6 +85,19 @@ class UI:
         screen.addstr("|\n")
         UI.printTableSeparator(screen, width)
 
+    def printMultiColumnTableHeader(screen,title,width,filtertext):
+        UI.printTableSeparator(screen, width)
+        screen.addstr("|{title:^{width}}|\n".format(title=title, width=width), curses.A_BOLD)
+        UI.printTableSeparator(screen, width)
+
+    def printItem(screen,entry,width,textFormatting,isNewLine=True,isFirstColumn=True):
+        if isFirstColumn:
+            screen.addstr("|")
+        screen.addstr("{entry:^{width}}".format(
+            entry=entry.displayName, width=width), textFormatting)
+        if isNewLine:
+            screen.addstr("|\n")
+
     def printTable(screen, title, dataList, start=0, end=0,
         filterBy="", selected=[], current = -1, normaltextFormat = curses.A_NORMAL,
         selectedtextFormat = curses.A_REVERSE, currentTextFormat = curses.A_REVERSE):
@@ -110,27 +123,52 @@ class UI:
 
         for index, entry in enumerate(dataList):
             if index >= start and index < end:
-                # Looks like some repeated code here? 
                 if index == current:
-                    screen.addstr("|")
-                    screen.addstr("{entry:^{width}}".format(
-                        entry=entry.displayName, width=tableWidth + tableMargins), currentTextFormat)
-                    screen.addstr("|\n")
+                    UI.printItem(screen,entry,tableWidth + tableMargins,currentTextFormat)
                 elif index in selected:
-                    screen.addstr("|")
-                    screen.addstr("{entry:^{width}}".format(
-                        entry=entry.displayName, width=tableWidth + tableMargins), selectedtextFormat)
-                    screen.addstr("|\n")
+                    UI.printItem(screen,entry,tableWidth + tableMargins,selectedtextFormat)
                 else:
-                    screen.addstr("|")
-                    screen.addstr("{entry:^{width}}".format(
-                        entry=entry.displayName, width=tableWidth + tableMargins), normaltextFormat)
-                    screen.addstr("|\n")
+                    UI.printItem(screen,entry,tableWidth + tableMargins,normaltextFormat)
         
         UI.printTableSeparator(screen, tableWidth + tableMargins + titleMargins)
         screen.refresh()
 
-    
+    def printMultiColumnTable(screen, title, dataLists=[], start=0, end=0,
+        filterBy="", selected=[], current = -1, normaltextFormat = curses.A_NORMAL,
+        selectedtextFormat = curses.A_REVERSE, currentTextFormat = curses.A_REVERSE):
+        
+        UI.clearScreen(screen)
+        titleMargins = 0
+        tableMargins = 6
+        tableWidth = 0
+        for dataList in dataLists:
+            tableWidth += (UI.calcTableWidth(title, dataList) + tableMargins + titleMargins)
+        if end == 0 or end > UI.TABLE_MINIMUM_LINES-UI.TABLE_DECORATION_LINES:
+            if curses.LINES>=UI.TABLE_MINIMUM_LINES:
+                end = curses.LINES-UI.TABLE_DECORATION_LINES+2
+            else:
+                UI.promptResize(screen,UI.TABLE_MINIMUM_LINES,tableWidth+tableMargins)
+                end = curses.LINES - UI.TABLE_DECORATION_LINES
+
+        UI.printMultiColumnTableHeader(screen, title, ((tableWidth + tableMargins + titleMargins)*len(dataLists))+len(dataLists)-1, filterBy)
+
+        start, end = UI.paginateTable(current, end)
+        for i in range(start,end):
+            for index, dataList in enumerate(dataLists):
+                if i >= start and i < end:
+                    if i < len(dataList):
+                        if i == current:
+                            UI.printItem(screen,dataList[i],
+                            tableWidth + tableMargins,currentTextFormat
+                            ,index==len(dataLists)-1,index==0)
+                        elif i in selected:
+                            UI.printItem(screen,dataList[i],tableWidth + tableMargins,selectedtextFormat,index==len(dataLists)-1)
+                        else:
+                            UI.printItem(screen,dataList[i],tableWidth + tableMargins,normaltextFormat,index==len(dataLists)-1)
+        
+        UI.printTableSeparator(screen, ((tableWidth + tableMargins + titleMargins)*len(dataLists))+len(dataLists)-1)
+        screen.refresh()
+
     def calcTableWidth(title,dataList):
         width = len(title)
         for data in dataList:
