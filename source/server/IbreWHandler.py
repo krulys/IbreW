@@ -16,33 +16,23 @@ class IbreWHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Type","application/json")
         self.end_headers()
 
-    #def do_GET(self):
-     #   split_path = os.path.splitext(self.path)
-      #  request_extension = split_path[1]
-       # print(self.path)
-        #if request_extension is "" or request_extension is ".html":
-         #   if self.path in routes:
-          #      handler = TemplateHandler()
-           #     handler.find(routes[self.path])
-            #else:
-             #   handler = BadRequestHandler()
-#
- #       else:
-  #          handler = BadRequestHandler()
-#
- #       self.respond({
-  #          'handler': handler
-   #     })
-
     def do_GET(self):
-        print   ('Get request received')
-        self.send_response(200)
-        self.send_header('Content-type','application/json')
-        self.end_headers()
-        jd = json.dumps(state._people, cls=Brencoder)
-        self.wfile.write(jd.encode("utf-8"))
-        self.respond()
-        return
+        split_path = os.path.splitext(self.path)
+        request_extension = split_path[1]
+        print(self.path)
+        if request_extension is "" or request_extension is ".html":
+            if self.path in routes:
+                handler = TemplateHandler()
+                handler.find(routes[self.path])
+            else:
+                handler = BadRequestHandler()
+
+        else:
+            handler = BadRequestHandler()
+
+        self.respond({
+            'handler': handler
+        })
 
     def handle_http(self, handler):
         status_code = handler.getStatus()

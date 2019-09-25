@@ -7,7 +7,7 @@ class TemplateHandler(RequestHandler):
 
     def find(self, routeData):
         try:
-            template_file = open('templates/{}'.format(routeData['template']))
+            template_file = open('source/server/website/{}'.format(routeData['template']))
             self.contents = template_file
             self.setStatus(200)
             return True
