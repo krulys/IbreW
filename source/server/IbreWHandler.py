@@ -16,24 +16,6 @@ class IbreWHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Type","application/json")
         self.end_headers()
 
-    #def do_GET(self):
-     #   split_path = os.path.splitext(self.path)
-      #  request_extension = split_path[1]
-       # print(self.path)
-        #if request_extension is "" or request_extension is ".html":
-         #   if self.path in routes:
-          #      handler = TemplateHandler()
-           #     handler.find(routes[self.path])
-            #else:
-             #   handler = BadRequestHandler()
-#
- #       else:
-  #          handler = BadRequestHandler()
-#
- #       self.respond({
-  #          'handler': handler
-   #     })
-
     def do_GET(self):
         print   ('Get request received')
         self.send_response(200)
