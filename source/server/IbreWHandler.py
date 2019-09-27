@@ -20,11 +20,7 @@ class IbreWHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Type","application/json")
         self.end_headers()
 
-    def do_GET(self):
-        print('GET request received')
-        path_args= self.path.split("/")[1::]
-        state = State()
-        state.loadObjectsFromDB()
+    def _serve_api(self,state,path_args):
         if path_args[0] == "people":
             self.send_response(200)
             self.send_header('Content-type','application/json')
@@ -33,7 +29,6 @@ class IbreWHandler(http.server.BaseHTTPRequestHandler):
                 if int(path_args[1]) <= len(state._people) and int(path_args[1]) > 0:
                     jd = json.dumps(state._people[int(int(path_args[1])-1)], cls=Brencoder)
                     self.wfile.write(jd.encode("utf-8"))
-                    self.respond()
                 else:
                     self.send_response(404)
                     self.send_header('Content-type','plain/text')
@@ -43,27 +38,70 @@ class IbreWHandler(http.server.BaseHTTPRequestHandler):
             else:
                 jd = json.dumps(state._people, cls=Brencoder)
                 self.wfile.write(jd.encode("utf-8"))
-                self.respond()
         elif self.path == "/drinks":
             self.send_response(200)
             self.send_header('Content-type','application/json')
             self.end_headers()
             jd = json.dumps(state._drinks, cls=Brencoder)
             self.wfile.write(jd.encode("utf-8"))
-            self.respond()
         elif self.path == "/round":
             self.send_response(200)
             self.send_header('Content-type','application/json')
             self.end_headers()
             jd = json.dumps(state._rounds, cls=Brencoder)
             self.wfile.write(jd.encode("utf-8"))
-            self.respond()
         else:
             self.send_response(404)
             self.send_header('Content-type','plain/text')
             self.end_headers()
             self.wfile.write(bytes("404 Not found", "UTF-8"))
-            self.respond()
+
+    def render_people(self,people):
+        result = ""
+        for person in people:
+            result += f"<li>{person._displayName}</li>\n"
+        return result
+
+    def render_drinks(self,drinks):
+        result = ""
+        for drink in drinks:
+            result += f"<li>{drink._displayName}</li>\n"
+        return result
+
+    def do_GET(self):
+        print('GET request received')
+        path_args= self.path.split("/")[1::]
+
+        state = State()
+        state.loadObjectsFromDB()
+
+        print(self.headers.get("Content-Type"))
+
+        if self.headers.get("Content-Type") == "application/json":
+            self._serve_api(state,path_args)
+        else:
+            self.send_response(200)
+            self.send_header('Content-type','text/html')
+            self.end_headers()
+            html = """<!DOCTYPE html>
+<html>
+    <head>
+        <title>IbreW</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    </head>
+    <body>
+            <h1 class = "title">STUFF</h1>
+            <h2 class = "subtitle"> People </h2>
+            <ul>"""
+            html += self.render_people(state._people) + """
+            </ul>
+            <h2 class = "subtitle">Drinks</h2>
+            <ul>"""
+            html += self.render_drinks(state._drinks) + """
+            </ul>
+    </body>
+</html>"""
+            self.wfile.write(html.encode("utf-8"))
         return
 
     def do_POST(self):
@@ -112,22 +150,3 @@ class IbreWHandler(http.server.BaseHTTPRequestHandler):
             self.respond()
 
         return
-
-    def handle_http(self, handler):
-        status_code = handler.getStatus()
-
-        self.send_response(status_code)
-
-        if status_code is 200:
-            content = handler.getContents()
-            self.send_header('Content-type', handler.getContentType())
-        else:
-            content = "404 Not Found"
-
-        self.end_headers()
-
-        return bytes(content, 'UTF-8')
-
-    def respond(self):
-        pass
-        #self.wfile.write(None)

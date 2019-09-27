@@ -21,7 +21,7 @@ class State:
 
     def saveRoundsToDB(self):
         insertSQL =  "INSERT INTO round (initiator) VALUES(%s)"
-        replaceSQL = "REPLACE INTO round (round_id) VALUES(%s)"
+        replaceSQL = "REPLACE INTO round (round_id, initiator) VALUES(%s, %s)"
         try:
             db = pymysql.connect(
             os.environ["DB_HOST"],
@@ -41,7 +41,9 @@ class State:
             cursor.close()
             
             return 0
-        except:
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
             return -1
 
     def savePeopleToDB(self):
