@@ -1,10 +1,10 @@
   body{
-      background-color: #eeeeee
+    background-color: #eeeeee
   }
   #nav-github-icon {
-      width: 39px;
-      height: 39px;
-      vertical-align: middle;
+    width: 39px;
+    height: 39px;
+    vertical-align: middle;
   }
 
   .navbar-image-ref{
@@ -16,14 +16,15 @@
     width: 500px;
   }
   #content {
-      margin-top: 80px;
-      margin-left: 40px;
-      margin-right: 10px;
+    font-family: 'Roboto', sans-serif;
+    margin-top: 80px;
+    margin-left: 40px;
+    margin-right: 10px;
   }
   .index-subtitle{
-      margin-top: 20px;
-      text-align: center;
-      color: #E35205;
+    margin-top: 20px;
+    text-align: center;
+    color: #E35205;
   }
   .index-subtitle img {
     height: 20px;

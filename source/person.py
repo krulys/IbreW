@@ -1,18 +1,15 @@
 class Person:
 
-    def __init__(self, person_id, displayName, team, favDrink, PMUDrink=None):
+    def __init__(self, person_id, displayName, team, favDrink):
         self._person_id = person_id
         self._displayName = displayName
         self._name = displayName.lower()
         self._team = team
         self._favDrink = favDrink
-        if not PMUDrink:
-            self._PMUDrink = favDrink
-        self._PMUDrink = PMUDrink
 
     def __eq__(self,other):
         if isinstance(other, Person):
-            return self.displayName == other.displayName and self.name == other.name and self.team == other.team and self.favDrink == other.favDrink and self.PMUDrink == other.PMUDrink
+            return self.displayName == other.displayName and self.name == other.name and self.team == other.team and self.favDrink == other.favDrink
         return False
     def setDisplayName(self, displayName):
         self._displayName = displayName
@@ -37,15 +34,8 @@ class Person:
     
     def getFavoriteDrink(self):
         return self._favDrink
-
-    def setPickMeUpDrink(self, PMUDrink):
-        self._PMUDrink = PMUDrink
-
-    def getPickMeUpDrink(self):
-        return self._PMUDrink
     
     name = property(getName, setName)
     displayName = property(getDisplayName, setDisplayName)
     team = property(getTeam,setTeam)
     favDrink = property(getFavoriteDrink,setFavoriteDrink)
-    PMUDrink = property(getPickMeUpDrink,setPickMeUpDrink)

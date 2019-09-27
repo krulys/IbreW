@@ -1,10 +1,20 @@
 class BrewRound:
     # TODO update to match new project structure
-    def __init__(self, people, initiator, teamName=None):
-        self._teamName = teamName
-        self._people = people
+    def __init__(self, roundID, initiator, people):
+        self._roundID = roundID
         self._initiatior = initiator
+        self._people = people
+        self.updateDrinks()
     
+    def getDrinks(self):
+        return self._drinks
+    
+    def updateDrinks(self):
+        favDrinks = []
+        for member in self._people:
+            favDrinks.append(member.favDrink)
+        self._drinks = favDrinks
+
     def getInitiator(self):
         return self._initiatior
 
@@ -17,12 +27,6 @@ class BrewRound:
     def getRoundID(self):
         return self._roundID
     
-    def setTeamName(self, teamName):
-        self._teamName = teamName
-    
-    def getTeamName(self):
-        return self._teamName
-    
     def setPeople(self, people):
         self._people=people
     
@@ -32,19 +36,7 @@ class BrewRound:
     def addPerson(self,person):
         self._people.append(person)
 
-    def start(self):
-        # TODO Start round
-        pass
-
-    def stop(self):
-        # TODO Stop round
-        pass
-
-    def display(self):
-        # TODO Display all orders so far
-        pass
-
-    teamName = property(getTeamName,setTeamName)
     roundID = property(getRoundID,setRoundID)
     people = property(getPeople,setPeople)
+    initiator = property(getInitiator,setInitiator)
 

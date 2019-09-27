@@ -2,9 +2,10 @@ import pickle
 import curses
 import pymysql
 import os
-from source.ui import UI as UI
+import source.ui as UI
 from source.person import Person
 from source.drink import Drink
+from source.brewRound import BrewRound
 from source.tables import Tables as tables
 
 
@@ -16,8 +17,36 @@ class State:
 
     _people = []
     _drinks = []
+    _rounds = []
 
-    def savePeopleToDB(screen):
+    def saveRoundsToDB(self):
+        insertSQL =  "INSERT INTO round (initiator) VALUES(%s)"
+        replaceSQL = "REPLACE INTO round (round_id) VALUES(%s)"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            for brewRound in self._rounds:
+                if brewRound._roundID != -1:
+                    result = cursor.execute(replaceSQL,
+                    (brewRound.roundID , brewRound.initiator._person_id )
+                    )
+                else:
+                    result = cursor.execute(insertSQL,(brewRound.initiator._person_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except:
+            return -1
+
+    def savePeopleToDB(self):
+        insertSQL =  "INSERT INTO `person` (display_name , name , team, favDrink_id ) VALUES(%s,%s,%s,%s)"
+        replaceSQL = "REPLACE INTO person(person_id, display_name , name , team , favDrink_id ) VALUES(%s,%s,%s,%s,%s)"
         try:
             db = pymysql.connect(
             os.environ["DB_HOST"],
@@ -28,17 +57,26 @@ class State:
             cursor = db.cursor()
             for person in State._people:
                 if person._person_id != -1:
-                    cursor.execute("REPLACE INTO person(person_id, display_name , name , team , favDrink_id , PMUDrink_id) VALUES(%i ,%s , %s , %s , %i , %i);",(person._person_id ,person._displayName,person._name, person._favDrink._drink_id , person._PMUDrink._drink_id))
+                    print("Replacing...")
+                    result = cursor.execute(replaceSQL,
+                    (person._person_id , person._displayName , person._name 
+                    , person._team , person._favDrink._drink_id))
+                    print(result)
                 else:
-                    cursor.execute(f"INSERT INTO person(display_name , name , team , favDrink_id , PMUDrink_id ) VALUES({person._displayName} , {person._name}, {person._team},{person._favDrink._drink_id},{person._PMUDrink._drink_id});")
-        except Exception as e:
-            screen.clear()
-            screen.addstr("Failed to save People\n")
-            screen.addstr(str(e))
-            screen.getch()
-
-
-    def saveDrinksToDB(screen):
+                    print("Inserting...")
+                    result = cursor.execute(insertSQL,
+                    (person._displayName,person._name, person._team,
+                     person._favDrink._drink_id))
+                    print(result)
+            db.commit()
+            cursor.close()
+            return 0
+        except:
+            return -1
+        
+    def saveDrinksToDB(self):
+        insertSQL =  "INSERT INTO drink (display_name , drink_type , recipe) VALUES(%s,%s,%s)"
+        replaceSQL = "REPLACE INTO drink (drink_id, display_name , drink_type , recipe) VALUES(%s,%s,%s,%s)"
         try:
             db = pymysql.connect(
             os.environ["DB_HOST"],
@@ -48,19 +86,30 @@ class State:
             )
             cursor = db.cursor()
             for drink in State._drinks:
-                cursor.execute(f"REPLACE INTO drink(drink_id, display_name,drink_type,recipe)VALUES({drink._drink_id},{drink._displayName}, {drink._drink_type}, {drink._recipe});")
+                if drink._person_id != -1:
+                    print("Replacing...")
+                    result = cursor.execute(replaceSQL,
+                    (drink._drink_id , drink._displayName , drink._drink_type 
+                    , drink._recipe))
+                    print(result)
+                else:
+                    print("Inserting...")
+                    result = cursor.execute(insertSQL,
+                    (drink._displayName , drink._drink_type 
+                    , drink._recipe))
+                    print(result)
+            db.commit()
+            cursor.close()
+            return 0
+        except:
+            return -1
 
-        except Exception as e:
-            screen.clear()
-            screen.addstr("Failed to save Drinks\n")
-            screen.addstr(str(e))
-            screen.getch()
+    def saveObjectsToDB(self):
 
-    def saveObjectsToDB(screen):
-        State.savePeopleToDB(screen)
-        State.saveDrinksToDB()
+        return State.savePeopleToDB(self) == 0 and State.saveDrinksToDB(self) == 0 and State.saveRoundsToDB(self)
 
-    def loadDrinksromDB(screen):
+
+    def loadDrinksFromDB(self):
         try:
             db = pymysql.connect(
             os.environ["DB_HOST"],
@@ -72,17 +121,20 @@ class State:
             cursor.execute("SELECT * FROM drink")
 
             results = cursor.fetchall()
-
+            self._drinks = []
             for row in results:
                 drink_id = row[0]
                 displayName = row[1]
                 drink_type = row[2]
                 recipe = row[3]
-                State._drinks.append(Drink(drink_id,displayName,drink_type,recipe))
-        except:
-            print("Something went wrong with drinks...")
+                self._drinks.append(Drink(drink_id,displayName,drink_type,recipe))
+            cursor.close()
+            return 0
+        except Exception as e:
+            print(f"Drinks Exception: {e}")
+            return -1
 
-    def loadPeopleFromDB(screen):
+    def loadPeopleFromDB(self):
         try:
             db = pymysql.connect(
             os.environ["DB_HOST"],
@@ -94,67 +146,61 @@ class State:
             cursor.execute("SELECT * FROM person")
 
             results = cursor.fetchall()
-
+            self._people = []
             for row in results:
                 person_id = row[0]
                 displayName = row[1]
                 name = row[2]
                 team = row[3]
-                favDrink = State._drinks[row[4]-1]
-                if row[5] != "NULL":
-                    PMUDrink = State._drinks[row[5]-1]
-                else:
-                    PMUDrink = None
-                State._people.append(Person(person_id,displayName,team,favDrink,PMUDrink))
+                for drink in self._drinks:
+                    if drink._drink_id == row[4]:
+                        favDrink = drink
+                        break
 
-
-                print(f"{displayName}, {name}, {team}")
+                self._people.append(Person(person_id,displayName,team,favDrink))
+            cursor.close()
+            db.close()
+            return 0
         except Exception as e:
-            print(e)
-
-    def loadObjectsFromDB(screen):
-        State.loadDrinksromDB(screen)
-        State.loadPeopleFromDB(screen)
-
-    def loadObjects(screen):
-        State._people = State.loadObjectFromFile(screen,State.PEOPLE_FILE)
-        if State._people == -1 :
-            State._people = []
-        State._drinks = State.loadObjectFromFile(screen,State.DRINKS_FILE)
-        if State._drinks == -1 :
-            State._drinks = []
-
-    def loadObjectFromFile(screen, file):
-        data = None
-        pickle_in = None
-        try:
-            pickle_in = open(file,"rb")
-            data = pickle.load(pickle_in)
-        except:
-            screen.addstr(f"Cant load data from {file}\n")
-            screen.getch()
+            print(f"People Exception: {e}")
             return -1
-        finally:
-            if pickle_in != None :
-                pickle_in.close()
-        return data
 
-    def saveObjects(screen):
-        State.saveObjectToFile(screen,State.PEOPLE_FILE,State._people)
-        State.saveObjectToFile(screen,State.DRINKS_FILE,State._drinks)
-
-    def saveObjectToFile(screen,file, data):
+    def loadRoundFromDB(self):
         try:
-            pickleOut = open(file,"wb")
-            pickle.dump(data,pickleOut)
-        except:
-            screen.addstr(f"Cant save data to {file}\n")
-            screen.refresh()
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM round")
+            results = cursor.fetchall()
+            self._rounds = []
+            for row in results:
+                roundID = row[0]
+                initiatorID = row[1]
+                initiator = self._people[initiatorID]
+                #TODO rework participants
+                participants = tables.findPeopleByTeam(initiator._team,self._people)
+                self._rounds.append(BrewRound(roundID,initiator,participants))
+            cursor.close()
+            return 0
+        except Exception as e:
+            print(f"Round Exception: {e}")
             return -1
-        finally:
-            pickleOut.close()
 
-    def addNewPerson(screen, name="",team="",favDrink=None,PMUDrink="N/A"):
+
+    def loadObjectsFromDB(self):
+        output = 0
+        output += self.loadDrinksFromDB()
+        output += self.loadPeopleFromDB()
+        output += self.loadRoundFromDB()
+
+        return output
+
+
+    def addNewPerson(self,state,screen, name="",team="",favDrink=None):
         UI.clearScreen(screen)
         screen.keypad(False)
         curses.echo()
@@ -163,41 +209,40 @@ class State:
         if not team:
             team = UI.cursedInput(screen,"Enter name of team person is in: ")
         if not favDrink:
-            if State._drinks != []:
+            if state._drinks != []:
                 favDrink = tables.handleSingleSelectTable(
-                    screen,"Drinks", State._drinks,"",0,
+                    screen,"Drinks", state._drinks,"",0,
                     "Select this persons favorite drink")
             elif favDrink == None:
                 UI.clearScreen(screen)
                 screen.addstr("No drinks found. You can assign drink later...")
                 screen.getch()
-        State._people.append(Person(-1,name,team,favDrink,PMUDrink))
+        state._people.append(Person(-1,name,team,favDrink))
 
-    def removePeople(screen):
-        removableItems = tables.handleMultiSelectTable(screen,"People",State.getPeople(),"",0)
+    def removePeople(self,state,screen):
+        removableItems = tables.handleMultiSelectTable(screen,"People",state._people,"",0)
         for item in removableItems:
             State._people.remove(item)
     
-    def getPeople():
+    def getPeople(self):
         return State._people
 
-    def sortPeople():
-        State._people.sort()
+    def sortPeople(self):
+        sorted(State._people, key=lambda person: person.displayName)
 
-    def reversePeople():
+    def reversePeople(self):
         State._people.reverse()
 
-
-    def getDrinks():
+    def getDrinks(self):
         return State._drinks
 
-    def sortDrinks():
-        State._drinks.sort()
+    def sortDrinks(self):
+        sorted(State._drinks, key=lambda drink: drink.displayName)
 
-    def reverseDrinks():
+    def reverseDrinks(self):
         State._drinks.reverse()
 
-    def addNewDrink(screen, name="",drink_type="",recipe=None):
+    def addNewDrink(self, screen, name="",drink_type="",recipe=None):
         UI.clearScreen(screen)
         
         curses.nocbreak()
@@ -216,19 +261,14 @@ class State:
         screen.keypad(True)
         curses.noecho()
 
-    def removeDrinks(screen, removableItems = None):
+    def removeDrinks(self, screen, removableItems = None):
         if not removableItems:
             removableItems = tables.handleMultiSelectTable(screen,"Drinks",State.getDrinks(),"",0)
         for item in removableItems:
             State._drinks.remove(item)
 
 
-    def assignFavDrinkPreference(screen):
+    def assignFavDrinkPreference(self,screen):
         person = tables.handleSingleSelectTable(screen,"People", State._people, "", 0,"Select a person to assign drink to")
         drink = tables.handleSingleSelectTable(screen,"Drinks", State._drinks, "", 0 , f"Select drink to assign to {person.displayName}")
         person.favDrink = drink
-
-    def assignPickMeUpDrinkPreference(screen):
-        person = tables.handleSingleSelectTable(screen,"People", State._people, "", 0,"Select a person to assign drink to")
-        drink = tables.handleSingleSelectTable(screen,"Drinks", State._drinks, "", 0 , f"Select drink to assign to {person.displayName}")
-        person.PMUDrink = drink

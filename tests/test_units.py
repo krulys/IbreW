@@ -5,10 +5,13 @@ from types import SimpleNamespace
 from source.cursedIbreW import *
 from source.person import Person
 from source.tables import Tables as tables
-from source.state import State as state
-from source.ui import UI as UI
+from source.state import State
+import source.ui as UI
 
 class test_People(unittest.TestCase):
+    
+    state = State()
+
     def test_find_people_by_team(self):
         screen = initializeScreen()
 
@@ -38,6 +41,7 @@ class test_People(unittest.TestCase):
         self.assertEqual(len(expected_output), len(actual_output))
         self.assertEqual(expected_output, actual_output)
 
+        deinitializeScreen(screen)
 
     def test_create_person_1(self):
         screen = initializeScreen()
@@ -46,19 +50,20 @@ class test_People(unittest.TestCase):
         team = "Academy"
         drink = state.getDrinks()[0]
 
-        newPerson = Person(name, team, drink)
+        newPerson = Person(-1, name, team, drink)
         test_people = state.getPeople().copy()
         test_people.append(newPerson)
         expected_output = test_people
         
         #Act
-        state.addNewPerson(screen, name, team, drink)
+        state.addNewPerson(state, screen, name, team, drink)
         actual_output = state.getPeople()
 
         #Assert
         self.assertEqual(len(actual_output), len(expected_output))
         self.assertEqual(expected_output, actual_output)
 
+        deinitializeScreen(screen)
 
     def test_create_person_2(self):
         screen = initializeScreen()
@@ -67,18 +72,19 @@ class test_People(unittest.TestCase):
         team = "Academy"
         drink = state.getDrinks()[0]
 
-        newPerson = Person(name, team, drink)
+        newPerson = Person(-1, name, team, drink)
         test_people = state.getPeople().copy()
         test_people.append(newPerson)
         expected_output = test_people
         
         #Act
-        state.addNewPerson(screen,name, team, drink)
+        state.addNewPerson(state, screen,name, team, drink)
         actual_output = state.getPeople()
 
         #Assert
         self.assertEqual(expected_output,actual_output)
 
+        deinitializeScreen(screen)
 
     def test_create_person_empty(self):
         screen = initializeScreen()
@@ -87,18 +93,19 @@ class test_People(unittest.TestCase):
         team = " "
         drink = state.getDrinks()[0]
 
-        newPerson = Person(name, team, drink)
+        newPerson = Person(name , name, team, drink)
         test_people = state.getPeople().copy()
         test_people.append(newPerson)
         expected_output = test_people
         
         #Act
-        state.addNewPerson(screen, name, team, drink)
+        state.addNewPerson(state ,screen, name, team, drink)
         actual_output = state.getPeople()
 
         #Assert
         self.assertEqual(expected_output, actual_output)
 
+        deinitializeScreen(screen)
 
     def test_calc_table_width(self):
         #Arrange
@@ -120,7 +127,7 @@ class test_People(unittest.TestCase):
         #Assert
         self.assertEqual(expected_output, actual_output)
         
-
+        
     def test_filter_table_1(self):
         #Arrange
         obj1 = SimpleNamespace(displayName='David')
@@ -131,5 +138,6 @@ class test_People(unittest.TestCase):
         filtered_peeps = tables.filterTable(test_peeps, "D")
         #Assert
         self.assertEqual(2, len(filtered_peeps))
+
 if __name__ == "__main__":
     unittest.main()

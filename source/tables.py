@@ -1,7 +1,7 @@
 import curses
 import curses.ascii
 import re
-from source.ui import UI as UI
+import source.ui as UI
 
 class Tables:
 
@@ -66,7 +66,6 @@ class Tables:
 
         return None
 
-
     def handleMultiSelectTable(screen, title,dataList,filterRegex, choice=0):
         itemSelected = False
         selectedItems = []
@@ -102,6 +101,7 @@ class Tables:
             if choice == -1:
                 break
         return selectedItems
+
 
     def handleItemRows(screen,choice,table):
         keyIn = screen.getch()
