@@ -18,8 +18,8 @@ def initializeScreen():
     return screen
 
 def deinitializeScreen(screen):
-    screen.endwin()
-
+    screen.keypad(False)
+    curses.echo()
 
 def exitApp(state, screen):
     UI.clearScreen(screen)

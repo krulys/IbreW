@@ -11,6 +11,7 @@ class Person:
         if isinstance(other, Person):
             return self.displayName == other.displayName and self.name == other.name and self.team == other.team and self.favDrink == other.favDrink
         return False
+        
     def setDisplayName(self, displayName):
         self._displayName = displayName
 

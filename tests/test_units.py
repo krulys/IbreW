@@ -4,13 +4,14 @@ from types import SimpleNamespace
 
 from source.cursedIbreW import *
 from source.person import Person
+from source.drink import Drink
 from source.tables import Tables as tables
 from source.state import State
 import source.ui as UI
 
 class test_People(unittest.TestCase):
-    
-    state = State()
+
+    #def initMockScr
 
     def test_find_people_by_team(self):
         screen = initializeScreen()
@@ -43,70 +44,6 @@ class test_People(unittest.TestCase):
 
         deinitializeScreen(screen)
 
-    def test_create_person_1(self):
-        screen = initializeScreen()
-        #Arrange
-        name = "Charlie"
-        team = "Academy"
-        drink = state.getDrinks()[0]
-
-        newPerson = Person(-1, name, team, drink)
-        test_people = state.getPeople().copy()
-        test_people.append(newPerson)
-        expected_output = test_people
-        
-        #Act
-        state.addNewPerson(state, screen, name, team, drink)
-        actual_output = state.getPeople()
-
-        #Assert
-        self.assertEqual(len(actual_output), len(expected_output))
-        self.assertEqual(expected_output, actual_output)
-
-        deinitializeScreen(screen)
-
-    def test_create_person_2(self):
-        screen = initializeScreen()
-        #Arrange
-        name = "Edward ScissorHands The Barber of LongStringTown"
-        team = "Academy"
-        drink = state.getDrinks()[0]
-
-        newPerson = Person(-1, name, team, drink)
-        test_people = state.getPeople().copy()
-        test_people.append(newPerson)
-        expected_output = test_people
-        
-        #Act
-        state.addNewPerson(state, screen,name, team, drink)
-        actual_output = state.getPeople()
-
-        #Assert
-        self.assertEqual(expected_output,actual_output)
-
-        deinitializeScreen(screen)
-
-    def test_create_person_empty(self):
-        screen = initializeScreen()
-        #Arrange
-        name = " "
-        team = " "
-        drink = state.getDrinks()[0]
-
-        newPerson = Person(name , name, team, drink)
-        test_people = state.getPeople().copy()
-        test_people.append(newPerson)
-        expected_output = test_people
-        
-        #Act
-        state.addNewPerson(state ,screen, name, team, drink)
-        actual_output = state.getPeople()
-
-        #Assert
-        self.assertEqual(expected_output, actual_output)
-
-        deinitializeScreen(screen)
-
     def test_calc_table_width(self):
         #Arrange
         title = "Testing"
@@ -127,7 +64,6 @@ class test_People(unittest.TestCase):
         #Assert
         self.assertEqual(expected_output, actual_output)
         
-        
     def test_filter_table_1(self):
         #Arrange
         obj1 = SimpleNamespace(displayName='David')
@@ -138,6 +74,46 @@ class test_People(unittest.TestCase):
         filtered_peeps = tables.filterTable(test_peeps, "D")
         #Assert
         self.assertEqual(2, len(filtered_peeps))
+
+    def test_drink_member_variables_are_assigned_correctly(self):
+        screen = initializeScreen()
+        #Arrange
+        state = State()
+        displayName = "Coffee"
+        drink_type = "coffee"
+        recipe = None
+        #Act
+        state.addNewDrink(screen,displayName,drink_type,recipe)
+        newDrink = state.getDrinks()[0]
+        #Assert
+        self.assertEqual(newDrink.displayName,displayName)
+        self.assertEqual(newDrink.drink_type,drink_type)
+        self.assertEqual(newDrink.recipe,recipe)
+
+        deinitializeScreen()
+
+    def test_person_member_variables_are_assigned_correctly(self):
+        screen = initializeScreen()
+        state = State()
+        #Arrange
+        name = "Testing Test"
+        team = "Test"
+        favDrink = Mock(Drink)
+        favDrink.drink_id = 1
+        favDrink.displayName = "Coffee"
+        favDrink.drink_type = "coffee"
+        favDrink.recipe = None
+        #Act
+        state.addNewPerson(state,screen,name,team,favDrink)
+        newPerson = state.getPeople()[0]
+        #Assert
+        self.assertEqual(len(state.getPeople()),1)
+        self.assertEqual(newPerson.displayName, name)
+        self.assertEqual(newPerson.name, name.lower())
+        self.assertEqual(newPerson.team, team)
+        self.assertEqual(newPerson.favDrink,favDrink)
+        deinitializeScreen(screen)
+
 
 if __name__ == "__main__":
     unittest.main()
