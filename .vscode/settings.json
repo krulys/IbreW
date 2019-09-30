@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/klaud/Dev/brIW/IbreW/bin/python3.7",
+    "python.pythonPath": "/home/klaud/.virtualenvs/IbreW/bin/python",
     "python.testing.pytestArgs": [
         "tests"
     ],

@@ -57,23 +57,20 @@ class State:
             "klaudijus"
             )
             cursor = db.cursor()
-            for person in State._people:
+            for person in self._people:
                 if person._person_id != -1:
-                    print("Replacing...")
                     result = cursor.execute(replaceSQL,
                     (person._person_id , person._displayName , person._name 
                     , person._team , person._favDrink._drink_id))
-                    print(result)
                 else:
-                    print("Inserting...")
                     result = cursor.execute(insertSQL,
                     (person._displayName,person._name, person._team,
                      person._favDrink._drink_id))
-                    print(result)
             db.commit()
             cursor.close()
             return 0
-        except:
+        except Exception as e:
+            print(f"People saving exception: {e}")
             return -1
         
     def saveDrinksToDB(self):
@@ -87,8 +84,8 @@ class State:
             "klaudijus"
             )
             cursor = db.cursor()
-            for drink in State._drinks:
-                if drink._person_id != -1:
+            for drink in self._drinks:
+                if drink._drink_id != -1:
                     print("Replacing...")
                     result = cursor.execute(replaceSQL,
                     (drink._drink_id , drink._displayName , drink._drink_type 
@@ -103,7 +100,8 @@ class State:
             db.commit()
             cursor.close()
             return 0
-        except:
+        except Exception as e:
+            print(f"Saving drinks exception: {e}")
             return -1
 
     def saveObjectsToDB(self):
@@ -154,11 +152,11 @@ class State:
                 displayName = row[1]
                 name = row[2]
                 team = row[3]
+                favDrink = None
                 for drink in self._drinks:
                     if drink._drink_id == row[4]:
                         favDrink = drink
                         break
-
                 self._people.append(Person(person_id,displayName,team,favDrink))
             cursor.close()
             db.close()
@@ -182,7 +180,10 @@ class State:
             for row in results:
                 roundID = row[0]
                 initiatorID = row[1]
-                initiator = self._people[initiatorID]
+                initiator = None
+                for person in self._people:
+                    if person._person_id == initiatorID:
+                        initiator = person
                 #TODO rework participants
                 participants = tables.findPeopleByTeam(initiator._team,self._people)
                 self._rounds.append(BrewRound(roundID,initiator,participants))
@@ -191,7 +192,6 @@ class State:
         except Exception as e:
             print(f"Round Exception: {e}")
             return -1
-
 
     def loadObjectsFromDB(self):
         output = 0
@@ -227,7 +227,7 @@ class State:
             State._people.remove(item)
     
     def getPeople(self):
-        return State._people
+        return self._people
 
     def sortPeople(self):
         sorted(State._people, key=lambda person: person.displayName)
@@ -236,13 +236,16 @@ class State:
         State._people.reverse()
 
     def getDrinks(self):
-        return State._drinks
+        return self._drinks
 
     def sortDrinks(self):
         sorted(State._drinks, key=lambda drink: drink.displayName)
 
     def reverseDrinks(self):
         State._drinks.reverse()
+
+    def getRounds(self):
+        return self._rounds
 
     def addNewDrink(self, screen, name="",drink_type="",recipe=None):
         UI.clearScreen(screen)

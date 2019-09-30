@@ -1,0 +1,28 @@
+  body{
+    background-color: #eeeeee
+  }
+
+  #logo{
+    display: block;
+    margin: auto;
+    width: 500px;
+  }
+  #content {
+    font-family: 'Roboto', sans-serif;
+    margin-top: 80px;
+    margin-left: 40px;
+    margin-right: 10px;
+  }
+  .index-subtitle{
+    margin-top: 20px;
+    text-align: center;
+    color: #E35205;
+  }
+  .index-subtitle img {
+    height: 20px;
+    border-radius: 360px;
+    background: grey;
+    margin-left: 10px;
+    padding: 5px;
+}
+  
