@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% if title %}
+            <title>{{title}}</title>
+        {% else %}
+            <title>IbreW</title>
+        {% endif %}
+
+        <link rel="stylesheet" href="/static/css/navbar.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto&amp;display=swap" rel="stylesheet">
+        {% block head %}
+
+        {% endblock %}
+    </head>
+    <body>
+        <header>
+            <ul id="navbar">
+                <li><a href="https://github.com/krulys/IbreW" class ="navbar-image-ref"><img id="nav-github-icon" src="https://img.icons8.com/color/48/000000/github--v1.png"/></a></li>
+                
+                {% if tryit_is_active %}
+                    <li><a href="#" class="active">Try it!</a></li>
+                {% else %}
+                    <li><a href="#">Try it!</a></li>
+                {% endif %}
+
+                {% if screenshots_is_active %}
+                    <li><a href="/screenshots" class="active">Screenshots</a></li>
+                {% else %}
+                    <li><a href="/screenshots">Screenshots</a></li>
+                {% endif %}
+
+                {% if home_is_active %}
+                    <li><a href="/" class="active">Home</a></li>
+                {% else %}
+                    <li><a href="/">Home</a></li>
+                {% endif %}
+            </ul>
+        </header>
+        <div id="content">
+            {% block content %}
+
+            {% endblock %}
+        </div>  
+    </body>
+</html>

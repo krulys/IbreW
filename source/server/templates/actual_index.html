@@ -1,27 +1,12 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>IbreW</title>
-        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="css/index.css">
-        <link rel="stylesheet" href="css/navbar.css">
-    </head>
-    <body>
-        <header>
-            <ul id="navbar">
-                
-                <li><a href="https://github.com/krulys/IbreW" class ="navbar-image-ref"><img id="nav-github-icon" src="https://img.icons8.com/color/48/000000/github--v1.png"/></a></li>
-                <li><a href="#">Try it!</a></li>
-                <li><a href="screenshots">Screenshots</a></li>
-                <li><a href="/" class="active">Home</a></li>
-            </ul>
-        </header>
-        <div id="content">
-            <img src="IbreW_logo.png" id="logo">
+{% extends "navbar_template.html" %}
+{% block head %}
+        {{ super() }}
+        <link rel="stylesheet" href="/static/css/index.css">
+{% endblock %}
+{% block content %}
+            <img src="/static/images/IbreW_logo.png" id="logo">
             <h2 class ="index-subtitle">About</h2>
             <p><strong>IbreW</strong> is a command-line application, developed at Infinity Works.</p>
             <p>It is to be used to start brew rounds.</p>
             <p>It is developed by <strong>Klaudijus 'Klaud' Rulys</strong></p>
-        </div>
-    </body>
-</html>
+{% endblock %}

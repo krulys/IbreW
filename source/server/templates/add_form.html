@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="/static/css/test.css">
+        <script src="/static/scripts/input_validation.js"></script>
+    </head>
 <form id="add-person-form"  method="post">
     <legend>Add new person:</legend>
     <br>
@@ -10,5 +16,8 @@
     <input id="person-team" type="text" name="person-team" />
     
     <br>
-    <input id="submit-btn" type="submit" value="Submit">
+    <input onclick="doInputValidation(event)"id="submit-btn" type="submit" value="Submit">
+    
+    <br>
+    <p class="invisible" id="form_error_msg">Invalid name and/or team</p>
 </form>

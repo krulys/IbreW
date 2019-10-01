@@ -47,6 +47,10 @@ def generateBody(body):
     return f"""<body>{body}</body>"""
 
 #Graphical
+@app.route('/')
+def index():
+    return render_template("actual_index.html", home_is_active=True)
+
 @app.route('/people')
 def people():
     state = State()
