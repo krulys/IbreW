@@ -1,0 +1,55 @@
+body{
+    background-color: #eeeeee
+}
+#nav-github-icon {
+    width: 39px;
+    height: 39px;
+    vertical-align: middle;
+}
+
+.navbar-image-ref{
+  padding: 6px 6px;
+}
+#content {
+    margin-top: 70px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.subtitle{
+    text-align: center;
+    color: #E35205;
+}
+.subtitle img {
+  height: 25px;
+  padding-top: 5px;
+  padding-left: 10px;
+}
+ul{
+    display: inline-block;
+}
+
+.henry{
+    height: 400px;
+    margin-left: 24%;
+    border-radius: 200px;
+    box-shadow: 0 10px 19px black;
+    animation-name: spin;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+}
+.inline-img{
+    width: 400px;
+    height: 400px;
+    float: right;
+    box-shadow: 4px 9px 12px black;
+
+}
+@keyframes spin {
+    from{
+    transform: rotateY(0deg);
+    }
+    to{
+    transform: rotateY(360deg);
+    }
+   }
