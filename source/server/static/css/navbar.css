@@ -1,54 +1,11 @@
-body{
-    margin: 0;
+.bg-outer-space{
+  background-color: #17151c;
 }
 
-#content {
-  margin-top: 80px;
+.bg-baltic-sea{
+  background-color: #282430
 }
 
-#navbar {
-  letter-spacing: 0.5px;
+.nav-link{
   font-family: 'Roboto', sans-serif;
-  margin: 0;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: #555;
-  box-shadow: 0 0px 22px #333;
-}
-
-#nav-github-icon {
-  width: 39px;
-  height: 39px;
-  vertical-align: middle;
-}
-
-#navbar li {
-  float: right;
-}
-
-.navbar-image-ref {
-  padding: 0px 0px;
-}
-
-li a {
-  border-radius: 10px;
-  display: block;
-  color: white;
-  text-align: center;
-  margin: 3px 2px;
-  padding: 8px 12px;
-  text-decoration: none;
-}
-
-.active {
-  background-color: #4CAF50;
-}
-/* Change the link color to #111 (black) on hover */
-li a:hover {
-  background-color: #111;
 }
