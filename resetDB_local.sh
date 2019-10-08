@@ -5,10 +5,11 @@ execute_query () {
 }
 #DROP TABLES
 echo "Deleting tables ..."
+
+execute_query 'DROP TABLE brew_order'
+execute_query 'DROP TABLE round'
 execute_query 'DROP TABLE person'
 execute_query 'DROP TABLE drink'
-execute_query 'DROP TABLE round'
-execute_query 'DROP TABLE brew_order'
 
 #Recreate tables
 echo "Creating tables..."

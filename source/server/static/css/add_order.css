@@ -1,0 +1,17 @@
+.selector{
+    margin:auto;
+    margin-bottom: 20px;
+    width:40%;
+}
+
+.customOrder{
+    display: none;
+}
+
+.form-check{
+    margin: 20px 0px;
+}
+
+button{
+    margin: 20px 0px;
+}

@@ -1,0 +1,57 @@
+{% extends "navbar_template.html" %}
+{% block head %}
+        {{ super() }}
+        <link rel="stylesheet" href="/static/css/add_order.css">
+        <script src="/static/scripts/add_order.js"></script>
+{% endblock %}
+{% block content %}
+    <div class="jumbotron jumbotron-fluid" id="app-jumbo" style="background-image: linear-gradient(#17151c, #282430);">
+        <div class="container text-center">
+            <h2>{{initiator_name}} has started a brew round and has invited you!</h2>
+            <form id="add_order_form">
+                <label for="participant_select">Select yourself:</label>
+                <select class="form-control selector" id="participant_select">
+                    <option value="0">Select yourself</option>
+                {% for teammate in teammates %}
+                    <option value="{{ teammate._person_id }}">{{ teammate._person_id }}: {{ teammate._displayName }}</option>
+                {% endfor %}
+                </select>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="exampleRadios" id="order_select1" value="usual" onclick="handleRadios()">
+                    <label class="form-check-label" for="exampleRadios1">
+                        I'll have the usual!
+                    </label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="radio" name="exampleRadios" id="order_select2" value="custom" onclick="handleRadios()">
+                    <label class="form-check-label" for="exampleRadios2">
+                        Custom
+                    </label>
+                </div>
+                <div class="form-group customOrder" id="customOrderForm">
+                    
+                    <label for="drink_select">Select your desired drink:</label>
+                    <select class="form-control selector" id="drink_select">
+                        <option value="0">Select your desired drink:</option>
+                    {% for drink in drinks %}
+                        <option value="{{ drink._drink_id }}">{{ drink._displayName }}</option>
+                    {% endfor %}
+                    </select>
+                    <div class="form-group">
+                        <label for="instructions">Special instructions</label>
+                        <textarea class="form-control" id="instructions" rows="3" placeholder="Be brief (max 255 characters)" maxlength="255"></textarea>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary btn-lg" id="add_order_button" onclick="submitOrder()">
+                    Add Order
+                </button>
+                <br/>
+                <button type="button" class="btn btn-primary btn-lg" id="show_order_button" >
+                    Show Orders
+                </button>
+            </form>
+        </div>
+    </div>
+    
+{% endblock %}vvvvvv

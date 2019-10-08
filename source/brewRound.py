@@ -2,7 +2,7 @@ class BrewRound:
     # TODO update to match new project structure
     def __init__(self, roundID, initiator, people):
         self._roundID = roundID
-        self._initiatior = initiator
+        self._initiator = initiator
         self._people = people
         self.updateDrinks()
     
@@ -16,10 +16,10 @@ class BrewRound:
         self._drinks = favDrinks
 
     def getInitiator(self):
-        return self._initiatior
+        return self._initiator
 
     def setInitiator(self, initiator):
-        self._initiatior = initiator
+        self._initiator = initiator
 
     def setRoundID(self,roundID):
         self._roundID=roundID

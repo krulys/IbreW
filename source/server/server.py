@@ -1,4 +1,5 @@
 from flask import *
+import os
 from source.state import State
 from source.person import Person
 from source.drink import Drink
@@ -7,95 +8,53 @@ from source.tables import Tables
 from source.server.brencoder import Brencoder
 
 app = Flask(__name__)
+state = State()
 
-def getNavBar():
-    return """<header>
-            <ul id="navbar">
-                
-                <li><a href="https://github.com/krulys/IbreW" class ="navbar-image-ref"><img id="nav-github-icon" src="https://img.icons8.com/color/48/000000/github--v1.png"/></a></li>
-                <li><a href="#">Try it!</a></li>
-                <li><a href="screenshots">Screenshots</a></li>
-                <li><a href="/" class="active">Home</a></li>
-            </ul>
-        </header>"""
-
-def getNavBarCSS():
-    return f"<link rel='stylesheet' href= '{url_for('static', filename='css/navbar.css')}'>"
-
-def getFontHead(font):
-    if font.lower() == "roboto":
-        return "<link href='https://fonts.googleapis.com/css?family=Roboto&display=swap' rel='stylesheet'>"
-
-def wrapInBoilerplate(head,body):
-    return f"""
-<!DOCTYPE html>
-<html>
-{head}
-{body}
-</html>
-"""
-
-def generateHead(headEntries):
-    html = """<head>
-        <title>IbreW</title>"""
-    for entry in headEntries:
-        html += entry +"\n"
-    html += "</head>"
-    return html
-
-def generateBody(body):
-    return f"""<body>{body}</body>"""
+#FavIcon
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 #Graphical
+
+@app.route('/round/id/<round_id>/show')
+def show_orders_by_round(round_id):
+    state = State()
+    state.loadObjectsFromDB()
+    currRound = None
+    #Get specified round
+    for bRound in state._rounds:
+        if bRound._roundID == int(round_id):
+            currRound = bRound
+            break
+    print(currRound)
+    print(currRound.initiator)
+    participants = Tables.findPeopleByTeam(currRound.initiator._team,state._people)
+
+    return render_template("add_order.html", is_tryit_active = True, initiator_name = currRound._initiator._displayName, teammates = participants, drinks = state._drinks)
+
+
+@app.route('/round/id/<round_id>')
+def orders_by_round(round_id):
+    currRound = state.findRoundByID(round_id)
+    #Get specified round
+
+    participants = Tables.findPeopleByTeam(currRound.initiator._team,state._people)
+
+    return render_template("add_order.html", is_tryit_active = True, initiator_name = currRound._initiator._displayName, teammates = participants, drinks = state._drinks)
+
+@app.route('/app')
+def app_page():
+    return render_template("app.html", is_tryit_active = True, people=state.getPeople())
+
 @app.route('/')
 def index():
-    return render_template("actual_index.html", home_is_active=True)
+    return render_template("index.html", is_home_active = True)
 
-@app.route('/people')
-def people():
-    state = State()
-    state.loadPeopleFromDB()
-
-    #HEAD
-    headEntries = []
-
-    #Font
-    headEntries.append(getFontHead("roboto"))
-
-    #CSS
-    headEntries.append(getNavBarCSS())
-
-
-    #Body
-    body = ""
-    body += getNavBar()
-
-    #Content
-    body+="<div id='content'>"
-    peopleRows =""
-    for person in state.getPeople():
-        peopleRows += f"""
-        <tr>
-            <td>{person.displayName}</td>
-            <td>{person.team}</td>
-        </tr>"""
-
-    body+=f"""
-    <table>
-        <caption><h2>People</h2></caption>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Team</th>
-            </tr>
-        </thead>
-        <tbody>
-            {peopleRows}
-        </tbody>
-    </table>"""
-    body += "</div>"
-
-    return wrapInBoilerplate(generateHead(headEntries),body)
+@app.route('/download')
+def download():
+    return render_template("download.html", is_download_active = True)
 
 @app.route('/form-example', methods=['GET', 'POST'])
 def form_example():
@@ -109,14 +68,10 @@ def form_example():
         return render_template("return_person_team.html", title="Posted", name=person_name, team=person_team)
 
 
-
 #API
 @app.route('/api/people', methods=['GET', 'POST'])
 def api_people():
     if request.method == "GET":
-        state = State()
-        state.loadObjectsFromDB()
-
         people = state.getPeople()
         encoder = Brencoder()
         return jsonify([encoder.default(person) for person in people])
@@ -124,10 +79,7 @@ def api_people():
         displayName = request.get_json()["displayName"]
         team = request.get_json()["team"]
         favDrinkID = request.get_json()["favDrink_id"]
-
-        state = State()
-        state.loadDrinksFromDB()
-        state.loadPeopleFromDB()
+        
         drinks = state.getDrinks()
 
         newPerson = None
@@ -137,13 +89,12 @@ def api_people():
 
         state._people.append(newPerson)
         state.savePeopleToDB()
+        state.loadPeopleFromDB()
         return "Done",201
 
 @app.route('/api/drinks', methods=['GET', 'POST'])
 def api_drinks():
     if request.method == "GET":
-        state = State()
-        state.loadDrinksFromDB()
         drinks = state.getDrinks()
         encoder = Brencoder()
         return jsonify([encoder.default(drink) for drink in drinks])
@@ -151,35 +102,48 @@ def api_drinks():
         displayName = request.get_json()["displayName"]
         drink_type = request.get_json()["drink_type"]
         recipe = request.get_json()["recipe"]
-
-        state = State()
-        state.loadDrinksFromDB()
-
+        
         state._drinks.append(Drink(-1,displayName,drink_type,recipe))
         state.saveDrinksToDB()
+        state.loadDrinksFromDB()
         return "Done",201
 
 @app.route('/api/rounds', methods=['GET', 'POST'])
 def api_rounds():
     if request.method == "GET":
-        state = State()
-        state.loadObjectsFromDB()
         rounds = state.getRounds()
         encoder = Brencoder()
         return jsonify([encoder.default(bRound) for bRound in rounds])
     elif request.method == "POST":
-        initiatorID = request.get_json()["initiator"]
-
-        state = State()
-        state.loadObjectsFromDB()
-        print(f"Before: {len(state._rounds)}")
+        initiatorID = int(request.get_json()["initiator"])
+        newID = state._rounds[-1]._roundID
         for index, person in enumerate(state._people):
             if person._person_id == initiatorID:
                 participants = Tables.findPeopleByTeam(person.team,state._people)
-                state._rounds.append(BrewRound(-1,person,participants))
-        print(f"After: {len(state._rounds)}")
+                state._rounds.append(BrewRound(newID,person,participants))
         state.saveRoundsToDB()
-        return "Done",201
+        state.loadRoundFromDB()
+        return str(newID),201
+
+@app.route('/api/orders', methods=['GET', 'POST'])
+def api_orders():
+    if request.method == "GET":
+        orders = state.getOrders()
+        encoder = Brencoder()
+        return jsonify([encoder.default(order) for order in orders])
+    elif request.method == "POST":
+        order_id = int(request.get_json()["order_id"])
+        person_id = int(request.get_json()["person_id"])
+        round_id = int(request.get_json()["round_id"])
+        drink_id = int(request.get_json()["drink_id"])
+        newID = state._orders[-1]._order_id
+        state.saveRoundsToDB()
+        state.loadRoundFromDB()
+        return str(newID),201
+
 
 if __name__ == '__main__':
-   app.run("0.0.0.0",port=8081,debug=True)
+    if state.loadObjectsFromDB() == 0:
+        app.run("0.0.0.0",port=8082,debug=True)
+    else:
+        print("Can't connect to DB")

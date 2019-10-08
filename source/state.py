@@ -6,6 +6,7 @@ import source.ui as UI
 from source.person import Person
 from source.drink import Drink
 from source.brewRound import BrewRound
+from source.order import Order
 from source.tables import Tables as tables
 
 
@@ -18,6 +19,34 @@ class State:
     _people = []
     _drinks = []
     _rounds = []
+
+    def saveOrdersToDB(self):
+        insertSQL =  "INSERT INTO brew_order(round_id, person_id, drink_id)VALUES(%s,%s,%s);"
+        replaceSQL = "REPLACE INTO brew_order (order_id, round_id, person_id, drink_id) VALUES(%s, %s, %s, %s)"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            for order in self._orders:
+                if order.__order_id != -1:
+                    result = cursor.execute(replaceSQL,
+                    (order._order_id , order._round_id, order._person_id,order._drink_id )
+                    )
+                else:
+                    result = cursor.execute(insertSQL,(order._round_id, order._person_id,order._drink_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
+            return -1
+
 
     def saveRoundsToDB(self):
         insertSQL =  "INSERT INTO round (initiator) VALUES(%s)"
@@ -152,11 +181,7 @@ class State:
                 displayName = row[1]
                 name = row[2]
                 team = row[3]
-                favDrink = None
-                for drink in self._drinks:
-                    if drink._drink_id == row[4]:
-                        favDrink = drink
-                        break
+                favDrink = self.findDrinkByID(row[4])
                 self._people.append(Person(person_id,displayName,team,favDrink))
             cursor.close()
             db.close()
@@ -180,10 +205,7 @@ class State:
             for row in results:
                 roundID = row[0]
                 initiatorID = row[1]
-                initiator = None
-                for person in self._people:
-                    if person._person_id == initiatorID:
-                        initiator = person
+                initiator = self.findPersonByID(initiatorID)
                 #TODO rework participants
                 participants = tables.findPeopleByTeam(initiator._team,self._people)
                 self._rounds.append(BrewRound(roundID,initiator,participants))
@@ -192,12 +214,39 @@ class State:
         except Exception as e:
             print(f"Round Exception: {e}")
             return -1
+        
+    def loadOrderFromDB(self):
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM brew_order")
+            results = cursor.fetchall()
+            self._orders = []
+            for row in results:
+                
+                order_id = row[0]
+                round_id = row[1]
+                person_id = row[2]
+                drink_id = row[3]
+                
+                self._orders.append(Order(order_id, self.findRoundByID(round_id), self.findPersonByID(person_id) ,self.findDrinkByID(drink_id)))
+            cursor.close()
+            return 0
+        except Exception as e:
+            print(f"Order Exception: {e}")
+            return -1
 
     def loadObjectsFromDB(self):
         output = 0
         output += self.loadDrinksFromDB()
         output += self.loadPeopleFromDB()
         output += self.loadRoundFromDB()
+        output += self.loadOrderFromDB()
 
         return output
 
@@ -247,6 +296,9 @@ class State:
     def getRounds(self):
         return self._rounds
 
+    def getOrders(self):
+        return self._orders
+
     def addNewDrink(self, screen, name="",drink_type="",recipe=None):
         UI.clearScreen(screen)
         
@@ -277,3 +329,31 @@ class State:
         person = tables.handleSingleSelectTable(screen,"People", State._people, "", 0,"Select a person to assign drink to")
         drink = tables.handleSingleSelectTable(screen,"Drinks", State._drinks, "", 0 , f"Select drink to assign to {person.displayName}")
         person.favDrink = drink
+        
+    def findRoundByID(self,round_id):
+        for round in self._rounds:
+            if round._roundID == int(round_id):
+                return round
+            
+        return -1
+    
+    def findPersonByID(self,person_id):
+        for person in self._people:
+            if person._person_id == int(person_id):
+                return person
+            
+        return -1
+    
+    def findDrinkByID(self,drink_id):
+        for drink in self._drinks:
+            if drink._drink_id == int(drink_id):
+                return drink
+            
+        return -1
+    
+    def findOrderByID(self,order_id):
+        for order in self._orders:
+            if order._order_id == int(order_id):
+                return order
+            
+        return -1
