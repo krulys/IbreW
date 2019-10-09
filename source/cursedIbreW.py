@@ -32,7 +32,7 @@ def exitApp(state, screen):
 def main(screen):
     curses.curs_set(False)
     state = State()
-    state.loadObjectsFromDB()
+    #state.loadObjectsFromDB()
     currentChoice = 0
     while currentChoice != -1:
         currentChoice = menuHandler.handleMainMenu(state,

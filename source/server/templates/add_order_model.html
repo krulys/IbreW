@@ -1,0 +1,28 @@
+<div class="modal fade" id="add_order_modal" tabindex="-1" role="dialog" aria-labelledby="addOrderModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOrderModalTitle">Choose round</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true"><img src="/static/images/delete.png" height="24" width="24"/></span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="add_order_form">
+                    <div class="form-group">
+                        <label for="round_select">Select round:</label>
+                        <select class="form-control" id="round_select">
+                        {% for round in rounds %}
+                            <option value="{{ round._roundID }}">Round #{{ round._roundID }}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="add_order_button" onclick="handleAddOrder()">Add</button>
+            </div>
+            </div>
+        </div>
+    </div>
