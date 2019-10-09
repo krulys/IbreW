@@ -76,7 +76,7 @@ function handleDrinkEditButton(value) {
     $('#edit_drinks_modal').modal("show")
 }
 
-function handleDrinkEditCommit(value){
+function handleDrinkEditCommit(event,value){
     var xhr = new XMLHttpRequest();
     var url = "/api/drinks";
     xhr.open("POST", url, true);
