@@ -1,0 +1,21 @@
+{% extends "navbar_template.html" %}
+{% block head %}
+        {{ super() }}
+        <link rel="stylesheet" href="/static/css/downloads.css">
+        <script src="/static/scripts/countdown.js"></script>
+{% endblock %}
+{% block content %}
+<div class="jumbotron jumbotron-fluid" id="download-jumbo" style="background-image: linear-gradient(#17151c, #282430);">
+        <div class="container text-center">
+            <h1 class="display-4" id="countdown-timer" >d h m s</h1>
+            <p class="lead" id="countdown-timer-text1">We are still perfecting it...</p>
+            <p class="lead" id="countdown-timer-text2">for <strong class="keyword">YOU</strong></p>
+            <div class="row" id="social-icons">
+                <a href="https://github.com/krulys/IbreW" class="col"><img src="/static/images/github-icon.png" class="lead" id="github-icon" /></a>
+                <a href="https://pinterest.com" class="col"><img src="/static/images/pinterest.png" class="lead" id="pinterest-icon" /></a>
+                <a href="https://twitter.com" class="col"><img src="/static/images/twitter.png" class="lead" id="twitter-icon" /></a>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}

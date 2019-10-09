@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 [![volkswagen status](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)](https://github.com/krulys/IbreW)
 [![Bash Shell](https://badges.frapsoft.com/bash/v1/bash.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
@@ -16,7 +14,8 @@
 [![forthebadge](https://forthebadge.com/images/badges/fo-shizzle.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/makes-people-smile.svg)](https://forthebadge.com)
 
->>>>>>> Stashed changes
+=======
+[![volkswagen status](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)](https://github.com/krulys/IbreW)
 # IbreW - *Digitize your brew rounds*
 >Where there’s tea there’s hope. - Arthur Wing Pinero
 

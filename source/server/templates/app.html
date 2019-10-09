@@ -1,0 +1,41 @@
+{% extends "navbar_template.html" %}
+{% block head %}
+        {{ super() }}
+        <link rel="stylesheet" href="/static/css/app.css">
+        <script src="/static/scripts/app.js"></script>
+{% endblock %}
+{% block content %}
+    {% include 'start_round_modal.html' %}
+    <div class="modal fade" id="link_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Your brew round link</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true"><img src="/static/images/delete.png" height="24" width="24"/></span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+               <a href="#" class="breakword" id="round_link"></a>
+            </div>
+            <div class="modal-footer text-center">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Done</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="jumbotron jumbotron-fluid" id="app-jumbo" style="background-image: linear-gradient(#17151c, #282430);">
+        <div class="container text-center">
+            <img src="/static/images/IbreW_logo_dark.png" id="logo" class="col-12 col-sm-12 col-md-10 col-lg-6 col-xl-6">
+            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#start_modal" id="start_button">
+                Start round
+            </button>
+            <br>
+            <button type="button" class="btn btn-primary btn-lg" id="manage_button" onclick="location.href = '/data/manage';">
+                Manage Data
+            </button>
+        </div>
+    </div>
+    
+{% endblock %}

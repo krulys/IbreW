@@ -1,0 +1,40 @@
+{% extends "navbar_template.html" %}
+{% block head %}
+        {{ super() }}
+        <link rel="stylesheet" href="/static/css/show_order.css">
+{% endblock %}
+{% block content %}
+    <div class="jumbotron jumbotron-fluid" id="app-jumbo" style="background-image: linear-gradient(#17151c, #282430);">
+        <div class="container text-center">
+            <h2>#{{round_id}} Orders</h2>
+        </div>
+        <div class="container table-responsive">
+                <table class="table table-ibrew table-hover table-borderless">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Drink</th>
+                                <th scope="col">Recipe</th>
+                                <th scope="col">&#10003;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td>{{order._person._displayName}}</td>
+                                    <td>{{order._drink._displayName}}</td>
+                                    <td>{{order._drink._recipe}}</td>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="defaultCheck{{order._order_id}}">
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                </table>
+            </div>
+    </div>
+    
+    
+{% endblock %}
