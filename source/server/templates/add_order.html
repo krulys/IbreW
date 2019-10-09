@@ -38,20 +38,16 @@
                         <option value="{{ drink._drink_id }}">{{ drink._displayName }}</option>
                     {% endfor %}
                     </select>
-                    <div class="form-group">
-                        <label for="instructions">Special instructions</label>
-                        <textarea class="form-control" id="instructions" rows="3" placeholder="Be brief (max 255 characters)" maxlength="255"></textarea>
-                    </div>
                 </div>
-                <button type="button" class="btn btn-primary btn-lg" id="add_order_button" onclick="submitOrder()">
+                <button type="button" class="btn btn-primary btn-lg" id="add_order_button" value="{{round_id}}" onclick="submitOrder(this.value)">
                     Add Order
                 </button>
                 <br/>
-                <button type="button" class="btn btn-primary btn-lg" id="show_order_button" >
+                <button type="button" class="btn btn-primary btn-lg" id="show_order_button" onclick="location.href = '/round/id/{{round_id}}/show';">
                     Show Orders
                 </button>
             </form>
         </div>
     </div>
     
-{% endblock %}vvvvvv
+{% endblock %}

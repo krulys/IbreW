@@ -1,0 +1,37 @@
+<div class="modal fade" id="edit_people_modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="ModalLabel"></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true"><img src="/static/images/delete.png" height="24" width="24"/></span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form >
+                <div class="form-group">
+                    <label for="person_name">Name</label>
+                    <input type="text" class="form-control" id="person_name" value="">
+                </div>
+                <div class="form-group">
+                    <label for="person_team">Team</label>
+                    <input type="text" class="form-control" id="person_team" value="">
+                </div>
+                <div class="form-group">
+                    <label for="drink_select">Select Favorite Drink:</label>
+                    <select class="form-control" id="drink_select">
+                        <option value="0" id="default_drink_select">Select Drink</option>
+                    {% for drink in drinks %}
+                        <option value="{{ drink._drink_id }}">{{ drink._drink_id }}: {{ drink._displayName }}</option>
+                    {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success" id="commit_person_btn" onclick="handlePeopleEditCommit(value)">Commit Changes</button>
+        </div>
+        </div>
+    </div>
+</div>

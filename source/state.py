@@ -20,6 +20,86 @@ class State:
     _drinks = []
     _rounds = []
 
+    def deletePersonFromDB(self, person_id):
+        deleteSQL =  "DELETE FROM person WHERE person_id = %s;"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            cursor.execute(deleteSQL,(person_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
+            return -1
+        
+    def deleteDrinkFromDB(self, drink_id):
+        deleteSQL =  "DELETE FROM drink WHERE drink_id = %s;"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            cursor.execute(deleteSQL,(drink_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
+            return -1
+        
+    def deleteRoundFromDB(self, round_id):
+        deleteSQL =  "DELETE FROM round WHERE round_id = %s;"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            cursor.execute(deleteSQL,(round_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
+            return -1
+        
+    def deleteOrderFromDB(self, order_id):
+        deleteSQL =  "DELETE FROM brew_order WHERE order_id = %s;"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            cursor.execute(deleteSQL,(order_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
+            return -1
+
     def saveOrdersToDB(self):
         insertSQL =  "INSERT INTO brew_order(round_id, person_id, drink_id)VALUES(%s,%s,%s);"
         replaceSQL = "REPLACE INTO brew_order (order_id, round_id, person_id, drink_id) VALUES(%s, %s, %s, %s)"
@@ -46,11 +126,36 @@ class State:
             print("Something went wrong")
             print(f"Error: {e}")
             return -1
-
+    
+    def saveOrderToDB(self,order):
+        insertSQL =  "INSERT INTO brew_order(round_id, person_id, drink_id)VALUES(%s,%s,%s);"
+        replaceSQL = "UPDATE brew_order SET round_id = %s, person_id = %s, drink_id = %s , favDrink_id =%s WHERE order_id = %s"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            if order._order_id != -1:
+                result = cursor.execute(replaceSQL,
+                (order._round._roundID, order._person._person_id, order._drink._drink_id, order._order_id  )
+                )
+            else:
+                result = cursor.execute(insertSQL,(order._round._roundID, order._person._person_id ,order._drink._drink_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
+            return -1
 
     def saveRoundsToDB(self):
         insertSQL =  "INSERT INTO round (initiator) VALUES(%s)"
-        replaceSQL = "REPLACE INTO round (round_id, initiator) VALUES(%s, %s)"
+        replaceSQL = "UPDATE round SET initiator = %s WHERE round_id = %s"
         try:
             db = pymysql.connect(
             os.environ["DB_HOST"],
@@ -66,6 +171,31 @@ class State:
                     )
                 else:
                     result = cursor.execute(insertSQL,(brewRound.initiator._person_id))
+            db.commit()
+            cursor.close()
+            
+            return 0
+        except Exception as e:
+            print("Something went wrong")
+            print(f"Error: {e}")
+            return -1
+    def saveRoundToDB(self, brewRound):
+        insertSQL =  "INSERT INTO round (initiator) VALUES(%s)"
+        replaceSQL = "UPDATE round SET initiator = %s WHERE round_id = %s"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            if brewRound._roundID != -1:
+                result = cursor.execute(replaceSQL,
+                (brewRound.initiator._person_id ,brewRound.roundID)
+                )
+            else:
+                result = cursor.execute(insertSQL,(brewRound.initiator._person_id))
             db.commit()
             cursor.close()
             
@@ -102,6 +232,33 @@ class State:
             print(f"People saving exception: {e}")
             return -1
         
+    def savePersonToDB(self,person):
+        insertSQL =  "INSERT INTO `person` (display_name , name , team, favDrink_id ) VALUES(%s,%s,%s,%s)"
+        replaceSQL = "UPDATE person SET display_name = %s, name = %s, team = %s , favDrink_id =%s WHERE person_id = %s"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            if person._person_id != -1:
+                result = cursor.execute(replaceSQL,
+                ( person._displayName , person._name,
+                  person._team , person._favDrink._drink_id,
+                  person._person_id))
+            else:
+                result = cursor.execute(insertSQL,
+                (person._displayName,person._name, person._team,
+                    person._favDrink._drink_id))
+            db.commit()
+            cursor.close()
+            return 0
+        except Exception as e:
+            print(f"People saving exception: {e}")
+            return -1    
+    
     def saveDrinksToDB(self):
         insertSQL =  "INSERT INTO drink (display_name , drink_type , recipe) VALUES(%s,%s,%s)"
         replaceSQL = "REPLACE INTO drink (drink_id, display_name , drink_type , recipe) VALUES(%s,%s,%s,%s)"
@@ -126,6 +283,32 @@ class State:
                     (drink._displayName , drink._drink_type 
                     , drink._recipe))
                     print(result)
+            db.commit()
+            cursor.close()
+            return 0
+        except Exception as e:
+            print(f"Saving drinks exception: {e}")
+            return -1
+        
+    def saveDrinkToDB(self, drink):
+        insertSQL =  "INSERT INTO drink (display_name , drink_type , recipe) VALUES(%s,%s,%s)"
+        replaceSQL = "UPDATE drink SET display_name = %s, drink_type = %s, recipe = %s  WHERE drink_id = %s"
+        try:
+            db = pymysql.connect(
+            os.environ["DB_HOST"],
+            os.environ["DB_USER"],
+            os.environ["DB_PASS"],
+            "klaudijus"
+            )
+            cursor = db.cursor()
+            if drink._drink_id != -1:
+                result = cursor.execute(replaceSQL,
+                ( drink._displayName , drink._drink_type 
+                , drink._recipe, drink._drink_id))
+            else:
+                result = cursor.execute(insertSQL,
+                (drink._displayName , drink._drink_type 
+                , drink._recipe))
             db.commit()
             cursor.close()
             return 0

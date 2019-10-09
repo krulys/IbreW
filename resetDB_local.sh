@@ -16,11 +16,11 @@ echo "Creating tables..."
 
 execute_query 'CREATE TABLE drink (drink_id INTEGER AUTO_INCREMENT PRIMARY KEY,display_name VARCHAR(100),drink_type VARCHAR(100),recipe VARCHAR(100))'
 
-execute_query 'CREATE TABLE person (person_id INTEGER AUTO_INCREMENT PRIMARY KEY, display_name VARCHAR(100), name VARCHAR(100), team VARCHAR(100), favDrink_id INTEGER , FOREIGN KEY(favDrink_id) REFERENCES drink(drink_id) ON DELETE CASCADE)'
+execute_query 'CREATE TABLE person (person_id INTEGER AUTO_INCREMENT PRIMARY KEY, display_name VARCHAR(100), name VARCHAR(100), team VARCHAR(100), favDrink_id INTEGER , FOREIGN KEY(favDrink_id) REFERENCES drink(drink_id) ON DELETE SET NULL)'
 
-execute_query 'CREATE TABLE round (round_id INTEGER PRIMARY KEY AUTO_INCREMENT, initiator INTEGER, FOREIGN KEY(initiator) REFERENCES person(person_id))'
+execute_query 'CREATE TABLE round (round_id INTEGER PRIMARY KEY AUTO_INCREMENT, initiator INTEGER, FOREIGN KEY(initiator) REFERENCES person(person_id) ON DELETE CASCADE)'
 
-execute_query 'CREATE TABLE brew_order (order_id INTEGER PRIMARY KEY AUTO_INCREMENT, round_id INTEGER, person_id INTEGER, drink_id INTEGER, FOREIGN KEY(round_id) REFERENCES round(round_id), FOREIGN KEY(person_id) REFERENCES person(person_id), FOREIGN KEY(drink_id) REFERENCES drink(drink_id))'
+execute_query 'CREATE TABLE brew_order (order_id INTEGER PRIMARY KEY AUTO_INCREMENT, round_id INTEGER, person_id INTEGER, drink_id INTEGER, FOREIGN KEY(round_id) REFERENCES round(round_id) ON DELETE CASCADE, FOREIGN KEY(person_id) REFERENCES person(person_id) ON DELETE CASCADE, FOREIGN KEY(drink_id) REFERENCES drink(drink_id) ON DELETE CASCADE)'
 
 #Insert Drinks
 echo "Inserting Drinks"

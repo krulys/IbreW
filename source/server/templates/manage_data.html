@@ -1,0 +1,150 @@
+{% extends "navbar_template.html" %}
+{% block head %}
+        {{ super() }}
+        <link rel="stylesheet" href="/static/css/manage_data.css">
+        <script src="/static/scripts/manage_data.js"></script>
+{% endblock %}
+{% block content %}
+    {% include 'edit_people_modal.html' %}
+    {% include 'edit_drinks_modal.html' %}
+    {% include 'start_round_modal.html' %}
+    {% include 'add_order_model.html' %}
+
+    <div class="jumbotron jumbotron-fluid" id="app-jumbo" style="background-image: linear-gradient(#17151c, #282430);">
+        <div class="container text-center">
+            <h2>Manage data</h2>
+        </div>
+    </div>
+
+    <div class="container text-center table-responsive">
+            <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-people" role="tab" aria-controls="pills-people" aria-selected="true">People</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-drinks" role="tab" aria-controls="pills-drinks" aria-selected="false">Drinks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-orders" role="tab" aria-controls="pills-orders" aria-selected="false">Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-rounds" role="tab" aria-controls="pills-rounds" aria-selected="false">Rounds</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="pills-people" role="tabpanel" aria-labelledby="pills-people-tab">
+                        <div class="container table-responsive">
+                            <table class="table table-ibrew table-hover table-borderless" id="people-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" style="width: 10%">ID</th>
+                                            <th scope="col" style="width: 50%">Name</th>
+                                            <th scope="col" style="width: 15%">Team</th>
+                                            <th scope="col"style="width: 10%">Favorite Drink</th>
+                                            <th scope="col"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for person in people %}
+                                            <tr>
+                                                <td>{{person._person_id}}</td>
+                                                <td id="person_name-{{person._person_id}}">{{person._displayName}}</td>
+                                                <td id="person_team-{{person._person_id}}">{{person._team}}</td>
+                                                <td id="person_drink-{{person._person_id}}">{{person._favDrink._displayName}}</td>
+                                                <td><button type="button" class="table-icon-button" value="{{person._person_id}}" onclick="handlePeopleEditButton(this.value)"><img src="/static/images/edit.png" class="table-icon"/></button><button type="button" class="table-icon-button" value="{{person._person_id}}" onclick="deletePerson(this.value)"><img src="/static/images/waste.png" class="table-icon"/></button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                            </table>
+                            <button type="button" class="btn btn-primary add_btn" onclick="handleAddPerson()" id="add_person_button">
+                                Add person
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="pills-drinks" role="tabpanel" aria-labelledby="pills-drinks-tab">
+                        <div class="container table-responsive">
+                            <table class="table table-ibrew table-hover table-borderless" id="drinks-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" style="width: 10%">ID</th>
+                                            <th scope="col"style="width: 25%">Name</th>
+                                            <th scope="col" style="width: 10%">Type</th>
+                                            <th scope="col"style="width: 50%">Recipe</th>
+                                            <th scope="col"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for drink in drinks %}
+                                            <tr>
+                                                <td>{{drink._drink_id}}</td>
+                                                <td id="drink_name-{{drink._drink_id}}" >{{drink._displayName}}</td>
+                                                <td id="drink_type-{{drink._drink_id}}">{{drink._drink_type}}</td>
+                                                <td id="drink_recipe-{{drink._drink_id}}" class="text-break">{{drink._recipe}}</td>
+                                                <td class="table-buttons"><button type="button" class="table-icon-button" value="{{drink._drink_id}}" onclick="handleDrinkEditButton(this.value)"><img src="/static/images/edit.png" class="table-icon"/></button><button type="button" class="table-icon-button" value="{{drink._drink_id}}" onclick="deleteDrink(this.value)"><img src="/static/images/waste.png" class="table-icon"/></button></button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                            </table>
+                            <button type="button" class="btn btn-primary add_btn" onclick="handleAddDrink()" id="add_drink_button">
+                                Add Drink
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="pills-orders" role="tabpanel" aria-labelledby="pills-orders-tab">
+                        <div class="container table-responsive">
+                            <table class="table table-ibrew table-hover table-borderless" id="orders-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" style="width: 16.66%">ID</th>
+                                            <th scope="col" style="width: 16.66%">Round</th>
+                                            <th scope="col" style="width: 25%">Person</th>
+                                            <th scope="col" style="width: 25%">Drink</th>
+                                            <th scope="col"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in orders %}
+                                            <tr>
+                                                <td>{{order._order_id}}</td>
+                                                <td>Round #{{order._round._roundID}}</td>
+                                                <td>{{order._person._displayName}}</td>
+                                                <td>{{order._drink._displayName}}</td>
+                                                <td><button type="button" class="table-icon-button" value="{{order._order_id}}" onclick="deleteOrder(this.value)"><img src="/static/images/waste.png" class="table-icon"/></button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                            </table>
+                            <button type="button" class="btn btn-primary add_btn" data-toggle="modal" data-target="#add_order_modal" id="add_order_button">
+                                Add order
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="pills-rounds" role="tabpanel" aria-labelledby="pills-rounds-tab">
+                        <div class="container table-responsive">
+                            <table class="table table-ibrew table-hover table-borderless" id="orders-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">ID</th>
+                                            <th scope="col">Initiator</th>
+                                            <th scope="col"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for round in rounds %}
+                                            <tr>
+                                                <td>{{round._roundID}}</td>
+                                                <td>{{round._initiator._displayName}}</td>
+                                                <td><button type="button" class="table-icon-button" value="{{round._roundID}}" onclick="deleteRound(this.value)"><img src="/static/images/waste.png" class="table-icon"/></button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                            </table>
+                            <button type="button" class="btn btn-primary add_btn" data-toggle="modal" data-target="#start_modal" id="start_button">
+                                Start round
+                            </button>
+                        </div>
+                    </div>
+                </div>
+    </div>
+    
+{% endblock %}

@@ -1,0 +1,47 @@
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    color: #eee;
+    background-color: #e35106;
+}
+
+a {
+    color: #e35106;
+}
+
+a:hover {
+    color: #c64707;
+}
+
+.table-ibrew{
+    color: #eee;
+    background: transparent;
+}
+
+.table-hover tbody tr:hover {
+    color: #eee;
+    background-color: rgba(0,0,0,.375);
+}
+
+.table-icon-button{
+    background: transparent;
+    border: none;
+}
+
+.table-icon-button:focus{
+    outline: none
+}
+
+.table-icon{
+    width: 30px
+}
+
+.table-buttons{
+    white-space: nowrap;
+}
+td{
+    word-break: break-word!important;
+    overflow-wrap: break-word!important;
+}
+
+.add_btn{
+    margin-bottom: 10px
+}

@@ -43,7 +43,7 @@ function setTimer(){
     // If the count down is finished, write some text
     if (distance < 0) {
         clearInterval(x);
-        document.getElementById("countdown-timer").innerHTML = "<img src='https://emoji.slack-edge.com/T0330CH2P/the_klaud/e8136277351e6c52.png' />";
+        document.getElementById("countdown-timer").innerHTML = "<img src='https://emoji.slack-edge.com/T0330CH2P/the_klaud/e8136277351e6c52.png' /><br/><p>Just get it on git or something idk</p>";
     }
     }, 1000);
 }
