@@ -1,10 +1,3 @@
-  body{
-    background-color: #282430;
-    letter-spacing: 0.5px;
-    color: #eee;
-    
-  }
-
 
   #index-jumbo{
     padding-top: 30vh;
@@ -18,21 +11,9 @@
     border-radius: 20px;
   }
 
-  .keyword{
-    color: #e35106;
-  }
 
   #what_is_button{
-    font-family: 'Roboto', sans-serif;
     margin: 40px 5px;
-    background-color: #e35106;
-    border-color: #e35106;
-    color: #eee;
-  }
-
-  #what_is_button:hover{
-    background-color: #c64707;
-    border-color: #c64707
   }
   
   p{

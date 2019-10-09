@@ -1,0 +1,9 @@
+.table-ibrew{
+    color: #eee;
+    background: transparent;
+}
+
+.table-hover tbody tr:hover {
+    color: #eee;
+    background-color: rgba(0,0,0,.375);
+}

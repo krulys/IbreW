@@ -1,0 +1,38 @@
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-outer-space">
+    <img src="/static/images/IbreW_logo_dark_mini.png" width="110" height="50" class="d-inline-block align-top navbar-brand"/>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        {% if is_home_active %}
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+        {% endif %}
+        {% if is_download_active %}
+            <li class="nav-item">
+                <a class="nav-link active" href="/download">Download</a>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="/download">Download</a>
+            </li>
+        {% endif %}
+        {% if is_tryit_active %}
+            <li class="nav-item">
+                <a class="nav-link active" href="/app">Try it</a>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link " href="/app">Try it</a>
+            </li>
+        {% endif %}
+        </ul>
+    </div>
+</nav>

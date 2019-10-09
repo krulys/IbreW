@@ -1,3 +1,4 @@
+[![volkswagen status](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)](https://github.com/krulys/IbreW)
 # IbreW - *Digitize your brew rounds*
 >Where there’s tea there’s hope. - Arthur Wing Pinero
 
