@@ -11,8 +11,6 @@ import source.ui as UI
 
 class test_People(unittest.TestCase):
 
-    #def initMockScr
-
     def test_find_people_by_team(self):
         screen = initializeScreen()
 
@@ -81,16 +79,16 @@ class test_People(unittest.TestCase):
         state = State()
         displayName = "Coffee"
         drink_type = "coffee"
-        recipe = None
+        recipe = ""
         #Act
-        state.addNewDrink(screen,displayName,drink_type,recipe)
+        state.addNewDrink(None,displayName,drink_type,recipe)
         newDrink = state.getDrinks()[0]
         #Assert
         self.assertEqual(newDrink.displayName,displayName)
         self.assertEqual(newDrink.drink_type,drink_type)
         self.assertEqual(newDrink.recipe,recipe)
 
-        deinitializeScreen()
+        #deinitializeScreen()
 
     def test_person_member_variables_are_assigned_correctly(self):
         screen = initializeScreen()

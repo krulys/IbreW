@@ -154,12 +154,13 @@ def api_rounds():
         return jsonify([encoder.default(bRound) for bRound in rounds])
     elif request.method == "POST":
         initiatorID = int(request.get_json()["initiator"])
-        newID = state._rounds[-1]._roundID
+        state.loadObjectsFromDB()
+        newID = state._rounds[-1]._roundID + 1
         bRound = None
-        for index, person in enumerate(state._people):
-            if person._person_id == initiatorID:
-                participants = Tables.findPeopleByTeam(person.team,state._people)
-                bRound = BrewRound(newID,person,participants)
+        person = state.findPersonByID(initiatorID)
+        participants = Tables.findPeopleByTeam(person.team,state._people)
+        bRound = BrewRound(newID,person,participants)
+        print(Brencoder().default(bRound))
         state.saveRoundToDB(bRound)
         state.loadRoundFromDB()
         return str(newID),201
@@ -214,6 +215,6 @@ def api_orders():
 
 if __name__ == '__main__':
     if state.loadObjectsFromDB() == 0:
-        app.run("0.0.0.0",port=8082,debug=True)
+        app.run("0.0.0.0",port=8081,debug=True)
     else:
         print("Can't connect to DB")

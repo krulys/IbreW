@@ -35,7 +35,7 @@ function submitOrder(round_id){
         xhr.setRequestHeader("Content-Type", "application/json");
         var data = JSON.stringify({
             "person_id": person_id,
-            "favDrink": true,
+            "favDrink": false,
             "round_id": round_id,
             "drink_id": drink_id
         });

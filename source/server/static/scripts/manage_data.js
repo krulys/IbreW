@@ -76,7 +76,8 @@ function handleDrinkEditButton(value) {
     $('#edit_drinks_modal').modal("show")
 }
 
-function handleDrinkEditCommit(event,value){
+function handleDrinkEditCommit(value){
+    form = document.getElementById("edit_drink_form")
     var xhr = new XMLHttpRequest();
     var url = "/api/drinks";
     xhr.open("POST", url, true);
@@ -155,12 +156,10 @@ function start_round(){
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState == XMLHttpRequest.DONE) {
-            alert("Done")
             location.reload()
         }
     }
     xhr.send(data);
-    alert("Sent")
     document.getElementById("start_round_btn").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
 }
 

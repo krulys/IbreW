@@ -180,7 +180,7 @@ class State:
             print(f"Error: {e}")
             return -1
     def saveRoundToDB(self, brewRound):
-        insertSQL =  "INSERT INTO round (initiator) VALUES(%s)"
+        insertSQL =  "INSERT INTO round (round_id, initiator) VALUES(%s,%s)"
         replaceSQL = "UPDATE round SET initiator = %s WHERE round_id = %s"
         try:
             db = pymysql.connect(
@@ -190,12 +190,10 @@ class State:
             "klaudijus"
             )
             cursor = db.cursor()
-            if brewRound._roundID != -1:
-                result = cursor.execute(replaceSQL,
-                (brewRound.initiator._person_id ,brewRound.roundID)
-                )
-            else:
-                result = cursor.execute(insertSQL,(brewRound.initiator._person_id))
+            
+            cursor.execute(insertSQL,
+            (brewRound._roundID , brewRound._initiator._person_id)
+            )
             db.commit()
             cursor.close()
             
@@ -482,24 +480,24 @@ class State:
     def getOrders(self):
         return self._orders
 
-    def addNewDrink(self, screen, name="",drink_type="",recipe=None):
-        UI.clearScreen(screen)
-        
-        curses.nocbreak()
-        screen.keypad(False)
-        curses.echo()
-
+    def addNewDrink(self, screen=None, name=None, drink_type=None, recipe=None):
+        if screen:
+            UI.clearScreen(screen)
+            curses.nocbreak()
+            screen.keypad(False)
+            curses.echo()
         if not name:
             name = UI.cursedInput(screen,"Enter name of drink: ")
         if not drink_type:
             drink_type = UI.cursedInput(screen,"Enter type of drink: ")
-        if not recipe:
+        if not recipe and recipe != "":
             recipe = UI.cursedInput(screen,"Enter recipe of drink (keep it short):")
-        State._drinks.append(Drink(name,drink_type,recipe))
-
-        curses.cbreak()
-        screen.keypad(True)
-        curses.noecho()
+        self._drinks.append(Drink(-1,name,drink_type,recipe))
+        
+        if screen:
+            curses.cbreak()
+            screen.keypad(True)
+            curses.noecho()
 
     def removeDrinks(self, screen, removableItems = None):
         if not removableItems:
